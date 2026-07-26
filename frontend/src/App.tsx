@@ -4,6 +4,14 @@ import Header from './components/Header'
 import ActionButton from './components/ActionButton'
 import ResumeUpload from './components/ResumeUpload'
 import JobDescription from './components/JobDescription'
+import AnalysisResult from './components/AnalysisResult'
+
+type AnalysisResultData = {
+  score: number
+  strengths: string[]
+  missingSkills: string[]
+  suggestions: string[]
+}
 
 function App() {
 
@@ -17,7 +25,8 @@ function App() {
   const [jobDescription, setJobDescription] = useState('')
 
   // Analysis Comparison
-  const [analysisResult, setAnalysisResult] = useState<string | null>(null)
+  const [analysisResult, setAnalysisResult] =
+    useState<AnalysisResultData | null>(null)
 
   // Future backend response
   function handleAnalyze() {
@@ -29,11 +38,30 @@ function App() {
     setAnalysisResult(null)
 
     setTimeout(() => {
-      setAnalysisResult(
-        'Your resume shows a strong foundation, but it could better highlight skills found in the job description.',
-      )
+      setAnalysisResult({
+        score: 82,
+        strengths: [
+          'React',
+          'TypeScript',
+          'Component architecture',
+        ],
+
+        missingSkills: [
+          'AWS',
+          'Docker',
+          'CI/CD',
+        ],
+
+        suggestions: [
+          'Add measurable achievements to your experience.',
+          'Highlight relevant software projects.',
+          'Connect your leadership experience to the position.',
+        ],
+      })
+
       setIsAnalyzing(false)
     }, 1500)
+    
   }
 
   return (
@@ -79,12 +107,13 @@ function App() {
           onClick={handleAnalyze}
         />
         {analysisResult && (
-          <section>
-            <h2>Analysis Result</h2>
-            <p>{analysisResult}</p>
-          </section>
+          <AnalysisResult
+            score={analysisResult.score}
+            strengths={analysisResult.strengths}
+            missingSkills={analysisResult.missingSkills}
+            suggestions={analysisResult.suggestions}
+          />
         )}
-
       </section>
     </main>
   )
