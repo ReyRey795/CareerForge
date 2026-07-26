@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import Header from './components/Header'
+import ActionButton from './components/ActionButton'
 
 function App() {
   const [showForm, setShowForm] = useState(false)
@@ -17,12 +18,10 @@ function App() {
           and receive AI-powered suggestions.
         </p>
 
-        <button 
-          type="button"
+        <ActionButton
+          text="Upload Resume"
           onClick={() => setShowForm(true)}
-        > 
-          Upload Resume
-        </button>
+        />
 
         {showForm && (
           <section>
