@@ -5,22 +5,14 @@ import ActionButton from './components/ActionButton'
 import ResumeUpload from './components/ResumeUpload'
 
 function App() {
-  // Creates a piece of state called "showForm".
-  // showForm starts as false, meaning the ResumeUpload component
-  // is hidden until the user clicks the button.
-  //
-  // setShowForm is the function used to update that value.
   const [showForm, setShowForm] = useState(false)
 
-  // resumeText stores the current resume text. 
-  // setResumeText updates it.useState('') starts it as an empty string. 
-  // Because this now lives in App, other future components can access the same resume data.
-  
+  // App owns the resume text so it can be shared with future
+  // analysis, comparison, and cover letter features.
   const [resumeText, setResumeText] = useState('')
 
   return (
     <main>
-      {/* Reusable Header component */}
       <Header title="CareerForge" />
 
       <section>
@@ -31,35 +23,28 @@ function App() {
           and receive AI-powered suggestions.
         </p>
 
-        {/* Reusable button component.
-            When clicked, showForm becomes true,
-            causing ResumeUpload to appear. */}
         <ActionButton
           text="Upload Resume"
           onClick={() => setShowForm(true)}
         />
 
-        {/* Conditional Rendering
-            The ResumeUpload component is only displayed
-            when showForm is true.
-
-            && means:
-            "If the condition on the left is true,
-            render the JSX on the right." */}
         {showForm && (
           <ResumeUpload
-            // Passes the onClose function down as a prop.
-            // When ResumeUpload calls onClose(),
-            // showForm becomes false and the form disappears.
+            resumeText={resumeText}
+            setResumeText={setResumeText}
             onClose={() => setShowForm(false)}
           />
         )}
 
-        {/* Placeholder button for future feature */}
-        <button type="button">Paste Job Description</button>
+        {/* Placeholder until job description input is implemented */}
+        <button type="button">
+          Paste Job Description
+        </button>
 
-        {/* Placeholder button for future feature */}
-        <button type="button">Analyze Resume</button>
+        {/* Placeholder until resume analysis is implemented */}
+        <button type="button">
+          Analyze Resume
+        </button>
       </section>
     </main>
   )
