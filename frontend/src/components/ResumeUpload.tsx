@@ -1,35 +1,24 @@
 // ==========================
 // Imports
-// Import the useState Hook so this component can remember
-// the text the user types into the textarea.
 // ==========================
 import { useState } from 'react'
 
 // ==========================
-// Props Type
-// Defines the information this component expects to receive
-// from its parent component.
+// Props
+// App controls when this component is displayed.
 // ==========================
 type ResumeUploadProps = {
-  // Function used to close this component.
-  // The actual logic lives in App and is passed down as a prop.
   onClose: () => void
 }
 
 // ==========================
-// Component
-// Allows the user to upload or paste their resume.
-// This component manages its own resume text while relying
-// on App to control when it is shown or hidden.
+// Resume Upload
+// Allows users to upload or paste their resume.
 // ==========================
 function ResumeUpload({ onClose }: ResumeUploadProps) {
-
-  // ==========================
-  // State
-  // Stores the current contents of the textarea.
-  // Because React owns this value, the textarea is a
-  // controlled component.
-  // ==========================
+  // Resume text is currently local to this component.
+  // It will later be lifted to App so it can be shared with
+  // resume analysis and other features.
   const [resumeText, setResumeText] = useState('')
 
   return (
@@ -40,16 +29,11 @@ function ResumeUpload({ onClose }: ResumeUploadProps) {
         Upload an existing resume or paste your resume text below.
       </p>
 
-      {/* Placeholder for future file upload functionality. */}
+      {/* Placeholder until file upload is implemented */}
       <button type="button">
         Choose Resume File
       </button>
 
-      {/* 
-        Controlled textarea:
-        - value displays the current state.
-        - onChange updates the state whenever the user types.
-      */}
       <textarea
         value={resumeText}
         onChange={(event) => setResumeText(event.target.value)}
@@ -57,7 +41,6 @@ function ResumeUpload({ onClose }: ResumeUploadProps) {
         rows={10}
       />
 
-      {/* Call the function passed from App to hide this component. */}
       <button
         type="button"
         onClick={onClose}
@@ -68,5 +51,4 @@ function ResumeUpload({ onClose }: ResumeUploadProps) {
   )
 }
 
-// Export the component so it can be imported into other files.
 export default ResumeUpload

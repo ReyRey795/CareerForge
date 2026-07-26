@@ -12,6 +12,12 @@ function App() {
   // setShowForm is the function used to update that value.
   const [showForm, setShowForm] = useState(false)
 
+  // resumeText stores the current resume text. 
+  // setResumeText updates it.useState('') starts it as an empty string. 
+  // Because this now lives in App, other future components can access the same resume data.
+  
+  const [resumeText, setResumeText] = useState('')
+
   return (
     <main>
       {/* Reusable Header component */}
