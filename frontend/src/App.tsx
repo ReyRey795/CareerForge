@@ -10,10 +10,31 @@ function App() {
   // Use states below
   const [showResumeForm, setShowResumeForm] = useState(false)
   const [showJobDescriptionForm, setShowJobDescriptionForm] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
 
   // Empty strings below
   const [resumeText, setResumeText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
+
+  // Analysis Comparison
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null)
+
+  // Future backend response
+  function handleAnalyze() {
+    if (!resumeText.trim() || !jobDescription.trim()) {
+      return
+    }
+
+    setIsAnalyzing(true)
+    setAnalysisResult(null)
+
+    setTimeout(() => {
+      setAnalysisResult(
+        'Your resume shows a strong foundation, but it could better highlight skills found in the job description.',
+      )
+      setIsAnalyzing(false)
+    }, 1500)
+  }
 
   return (
     <main>
@@ -40,7 +61,6 @@ function App() {
           />
         )}
 
-        {/* Placeholder until job description input is implemented */}
         <ActionButton
           text="Paste Job Description"
           onClick={() => setShowJobDescriptionForm(true)}
@@ -54,10 +74,17 @@ function App() {
           />
         )}
 
-        {/* Placeholder until resume analysis is implemented */}
-        <button type="button">
-          Analyze Resume
-        </button>
+        <ActionButton
+          text={isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
+          onClick={handleAnalyze}
+        />
+        {analysisResult && (
+          <section>
+            <h2>Analysis Result</h2>
+            <p>{analysisResult}</p>
+          </section>
+        )}
+
       </section>
     </main>
   )
