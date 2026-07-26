@@ -3,13 +3,17 @@ import './App.css'
 import Header from './components/Header'
 import ActionButton from './components/ActionButton'
 import ResumeUpload from './components/ResumeUpload'
+import JobDescription from './components/JobDescription'
 
 function App() {
-  const [showForm, setShowForm] = useState(false)
 
-  // App owns the resume text so it can be shared with future
-  // analysis, comparison, and cover letter features.
+  // Use states below
+  const [showResumeForm, setShowResumeForm] = useState(false)
+  const [showJobDescriptionForm, setShowJobDescriptionForm] = useState(false)
+
+  // Empty strings below
   const [resumeText, setResumeText] = useState('')
+  const [jobDescription, setJobDescription] = useState('')
 
   return (
     <main>
@@ -25,21 +29,30 @@ function App() {
 
         <ActionButton
           text="Upload Resume"
-          onClick={() => setShowForm(true)}
+          onClick={() => setShowResumeForm(true)}
         />
 
-        {showForm && (
+        {showResumeForm && (
           <ResumeUpload
             resumeText={resumeText}
             setResumeText={setResumeText}
-            onClose={() => setShowForm(false)}
+            onClose={() => setShowResumeForm(false)}
           />
         )}
 
         {/* Placeholder until job description input is implemented */}
-        <button type="button">
-          Paste Job Description
-        </button>
+        <ActionButton
+          text="Paste Job Description"
+          onClick={() => setShowJobDescriptionForm(true)}
+        />
+
+        {showJobDescriptionForm && (
+          <JobDescription
+            jobDescription={jobDescription}
+            setJobDescription={setJobDescription}
+            onClose={() => setShowJobDescriptionForm(false)}
+          />
+        )}
 
         {/* Placeholder until resume analysis is implemented */}
         <button type="button">
