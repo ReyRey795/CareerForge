@@ -10,6 +10,7 @@ The project is being built from the ground up as a portfolio application to demo
 
 - Upload or paste a resume
 - Paste a job description
+- Mock resume analysis workflow
 - Reusable React component architecture
 - State management using React Hooks
 - Responsive user interface built with React and TypeScript
@@ -104,6 +105,7 @@ http://localhost:5173
 - [x] Resume input component
 - [x] Job description input component
 - [x] React state management
+- [x] Mock resume analysis workflow
 - [ ] Resume file upload
 - [ ] Resume comparison engine
 - [ ] Backend API integration
