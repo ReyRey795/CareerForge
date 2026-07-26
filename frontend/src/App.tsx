@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import Header from './components/Header'
 import ActionButton from './components/ActionButton'
+import ResumeUpload from './components/ResumeUpload'
 
 function App() {
   const [showForm, setShowForm] = useState(false)
@@ -24,29 +25,7 @@ function App() {
         />
 
         {showForm && (
-          <section>
-            <h2>Add your resume</h2>
-
-            <p>
-              Upload an existing resume or paste your resume text below.
-            </p>
-
-            <button type="button">
-              Choose Resume File
-            </button>
-
-            <textarea
-              placeholder="Paste your resume here"
-              rows={10}
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-            >
-              Close
-            </button>
-          </section>
+          <ResumeUpload onClose={() => setShowForm(false)} />
         )}
 
         <button type="button">Paste Job Description</button>
@@ -56,5 +35,3 @@ function App() {
     </main>
   )
 }
-
-export default App
