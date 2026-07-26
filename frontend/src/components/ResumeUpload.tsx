@@ -1,5 +1,3 @@
-date ResumeUpload.tsx to this:
-
 import { useState } from 'react'
 
 type ResumeUploadProps = {
