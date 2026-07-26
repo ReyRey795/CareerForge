@@ -1,26 +1,15 @@
-// ==========================
-// Imports
-// ==========================
-import { useState } from 'react'
-
-// ==========================
-// Props
-// App controls when this component is displayed.
-// ==========================
 type ResumeUploadProps = {
+  // App owns the resume text so it can be shared with future features.
+  resumeText: string
+  setResumeText: (text: string) => void
   onClose: () => void
 }
 
-// ==========================
-// Resume Upload
-// Allows users to upload or paste their resume.
-// ==========================
-function ResumeUpload({ onClose }: ResumeUploadProps) {
-  // Resume text is currently local to this component.
-  // It will later be lifted to App so it can be shared with
-  // resume analysis and other features.
-  const [resumeText, setResumeText] = useState('')
-
+function ResumeUpload({
+  resumeText,
+  setResumeText,
+  onClose,
+}: ResumeUploadProps) {
   return (
     <section>
       <h2>Add your resume</h2>
