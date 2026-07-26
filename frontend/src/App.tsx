@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import './App.css'
+import Header from './components/Header'
 
 function App() {
   const [showForm, setShowForm] = useState(false)
 
   return (
     <main>
-      <header>
-        <p>CareerForge</p>
-      </header>
+      <Header title="CareerForge" />
 
       <section>
         <h1>Build stronger job applications</h1>
