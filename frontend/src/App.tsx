@@ -45,11 +45,7 @@ function App() {
         requiredSkills: result.requiredSkills,
         strengths: result.matchedSkills,
         missingSkills: result.missingSkills,
-        suggestions: [
-          'Add measurable achievements to your experience.',
-          'Highlight relevant software projects.',
-          'Connect your leadership experience to the position.',
-        ],
+        suggestions: result.suggestions,
       })
 
       setIsAnalyzing(false)
