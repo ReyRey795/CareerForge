@@ -48,67 +48,122 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
   return (
     <section className="analysis-result">
-      <h2>Analysis Results</h2>
+      <div className="results-heading">
+        <div className="results-title">
+          <span className="results-icon" aria-hidden="true">
+            ↗
+          </span>
 
-      <div className="score-section">
-        <h3>Match Score</h3>
-
-        <p className="score">{result.score}%</p>
-        <p className="score-label">{scoreLabel}</p>
-
-        <div className="score-bar">
-          <div
-            className={`score-bar-fill ${scoreClass}`}
-            style={{ width: `${result.score}%` }}
-          />
+          <div>
+            <p className="section-kicker">Your comparison</p>
+            <h2>Analysis Results</h2>
+          </div>
         </div>
 
-        <p className="score-details">
-          {result.strengths.length} of {result.requiredSkills.length} required
-          skills matched
-        </p>
+        <span className="results-status">Analysis complete</span>
       </div>
 
-      <div>
-        <h3>Strengths</h3>
+      <div className="results-grid">
+        <article className="result-card score-card">
+          <p className="result-card-label">Match score</p>
 
-        {result.strengths.length > 0 ? (
-          <ul>
-            {result.strengths.map((strength) => (
-              <li key={strength}>{strength}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>No matching skills found.</p>
-        )}
-      </div>
+          <p className={`score ${scoreClass}`}>{result.score}%</p>
+          <p className={`score-label ${scoreClass}`}>{scoreLabel}</p>
 
-      <div>
-        <h3>Missing Skills</h3>
+          <div
+            className="score-bar"
+            role="progressbar"
+            aria-label="Resume match score"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={result.score}
+          >
+            <div
+              className={`score-bar-fill ${scoreClass}`}
+              style={{ width: `${Math.min(result.score, 100)}%` }}
+            />
+          </div>
 
-        {result.missingSkills.length > 0 ? (
-          <ul>
-            {result.missingSkills.map((skill) => (
-              <li key={skill}>{skill}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>No missing skills found.</p>
-        )}
-      </div>
+          <div className="score-scale" aria-hidden="true">
+            <span>0%</span>
+            <span>50%</span>
+            <span>100%</span>
+          </div>
 
-      <div>
-        <h3>Suggestions</h3>
+          <p className="score-details">
+            <strong>{result.strengths.length}</strong> of{' '}
+            <strong>{result.requiredSkills.length}</strong> required skills
+            matched
+          </p>
+        </article>
 
-        {result.suggestions.length > 0 ? (
-          <ul>
-            {result.suggestions.map((suggestion) => (
-              <li key={suggestion}>{suggestion}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>No suggestions available.</p>
-        )}
+        <article className="result-card strengths-card">
+          <div className="result-card-heading">
+            <h3>Strengths</h3>
+            <span className="count-badge">
+              {result.strengths.length}
+            </span>
+          </div>
+
+          {result.strengths.length > 0 ? (
+            <ul className="skill-list">
+              {result.strengths.map((strength) => (
+                <li key={strength}>
+                  <span className="list-icon success-icon">✓</span>
+                  {strength}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-message">No matching skills were detected.</p>
+          )}
+        </article>
+
+        <article className="result-card missing-card">
+          <div className="result-card-heading">
+            <h3>Missing Skills</h3>
+            <span className="count-badge gold-badge">
+              {result.missingSkills.length}
+            </span>
+          </div>
+
+          {result.missingSkills.length > 0 ? (
+            <ul className="skill-list">
+              {result.missingSkills.map((skill) => (
+                <li key={skill}>
+                  <span className="list-icon missing-icon">•</span>
+                  {skill}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-message">
+              No required skills appear to be missing.
+            </p>
+          )}
+        </article>
+
+        <article className="result-card suggestions-card">
+          <div className="result-card-heading">
+            <h3>Suggestions</h3>
+            <span className="count-badge">
+              {result.suggestions.length}
+            </span>
+          </div>
+
+          {result.suggestions.length > 0 ? (
+            <ul className="suggestion-list">
+              {result.suggestions.map((suggestion) => (
+                <li key={suggestion}>
+                  <span className="suggestion-icon">✦</span>
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-message">No suggestions are available.</p>
+          )}
+        </article>
       </div>
     </section>
   )
