@@ -5,6 +5,7 @@ import ActionButton from './components/ActionButton'
 import ResumeUpload from './components/ResumeUpload'
 import JobDescription from './components/JobDescription'
 import AnalysisResult from './components/AnalysisResult'
+import { analyzeResume } from './utils/analyzeResume'
 
 type AnalysisResultData = {
   score: number
@@ -14,21 +15,19 @@ type AnalysisResultData = {
 }
 
 function App() {
-
-  // Use states below
+  // Form visibility
   const [showResumeForm, setShowResumeForm] = useState(false)
   const [showJobDescriptionForm, setShowJobDescriptionForm] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
-  // Empty strings below
+  // User input
   const [resumeText, setResumeText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
 
-  // Analysis Comparison
+  // Analysis result
   const [analysisResult, setAnalysisResult] =
     useState<AnalysisResultData | null>(null)
 
-  // Future backend response
   function handleAnalyze() {
     if (!resumeText.trim() || !jobDescription.trim()) {
       return
@@ -38,20 +37,12 @@ function App() {
     setAnalysisResult(null)
 
     setTimeout(() => {
+      const result = analyzeResume(resumeText, jobDescription)
+
       setAnalysisResult({
-        score: 82,
-        strengths: [
-          'React',
-          'TypeScript',
-          'Component architecture',
-        ],
-
-        missingSkills: [
-          'AWS',
-          'Docker',
-          'CI/CD',
-        ],
-
+        score: result.percentMatched,
+        strengths: result.matchedSkills,
+        missingSkills: result.missingSkills,
         suggestions: [
           'Add measurable achievements to your experience.',
           'Highlight relevant software projects.',
@@ -61,7 +52,6 @@ function App() {
 
       setIsAnalyzing(false)
     }, 1500)
-    
   }
 
   return (
@@ -106,6 +96,7 @@ function App() {
           text={isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
           onClick={handleAnalyze}
         />
+
         {analysisResult && (
           <AnalysisResult
             score={analysisResult.score}
