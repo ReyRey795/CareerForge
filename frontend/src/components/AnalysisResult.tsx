@@ -1,42 +1,84 @@
-type AnalysisResultProps = {
+type AnalysisResultData = {
   score: number
   strengths: string[]
   missingSkills: string[]
   suggestions: string[]
 }
 
-function AnalysisResult({
-  score,
-  strengths,
-  missingSkills,
-  suggestions,
-}: AnalysisResultProps) {
+type AnalysisResultProps = {
+  result: AnalysisResultData
+}
+
+function getScoreLabel(score: number) {
+  if (score >= 90) {
+    return 'Excellent Match'
+  }
+
+  if (score >= 70) {
+    return 'Good Match'
+  }
+
+  if (score >= 50) {
+    return 'Fair Match'
+  }
+
+  return 'Needs Improvement'
+}
+
+function AnalysisResult({ result }: AnalysisResultProps) {
+  const scoreLabel = getScoreLabel(result.score)
+
   return (
-    <section>
-      <h2>Analysis Result</h2>
+    <section className="analysis-result">
+      <h2>Analysis Results</h2>
 
-      <p>Match Score: {score}%</p>
+      <div className="score-section">
+        <h3>Match Score</h3>
+        <p className="score">{result.score}%</p>
+        <p className="score-label">{scoreLabel}</p>
+      </div>
 
-      <h3>Strengths</h3>
-      <ul>
-        {strengths.map((strength) => (
-          <li key={strength}>{strength}</li>
-        ))}
-      </ul>
+      <div>
+        <h3>Strengths</h3>
 
-      <h3>Missing Skills</h3>
-      <ul>
-        {missingSkills.map((skill) => (
-          <li key={skill}>{skill}</li>
-        ))}
-      </ul>
+        {result.strengths.length > 0 ? (
+          <ul>
+            {result.strengths.map((strength) => (
+              <li key={strength}>{strength}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>No matching skills found.</p>
+        )}
+      </div>
 
-      <h3>Suggestions</h3>
-      <ul>
-        {suggestions.map((suggestion) => (
-          <li key={suggestion}>{suggestion}</li>
-        ))}
-      </ul>
+      <div>
+        <h3>Missing Skills</h3>
+
+        {result.missingSkills.length > 0 ? (
+          <ul>
+            {result.missingSkills.map((skill) => (
+              <li key={skill}>{skill}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>No missing skills found.</p>
+        )}
+      </div>
+
+      <div>
+        <h3>Suggestions</h3>
+
+        {result.suggestions.length > 0 ? (
+          <ul>
+            {result.suggestions.map((suggestion) => (
+              <li key={suggestion}>{suggestion}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>No suggestions available.</p>
+        )}
+      </div>
     </section>
   )
 }
