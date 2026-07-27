@@ -33,10 +33,18 @@ function AnalysisResult({ result }: AnalysisResultProps) {
       <h2>Analysis Results</h2>
 
       <div className="score-section">
-        <h3>Match Score</h3>
-        <p className="score">{result.score}%</p>
-        <p className="score-label">{scoreLabel}</p>
+      <h3>Match Score</h3>
+
+      <p className="score">{result.score}%</p>
+      <p className="score-label">{scoreLabel}</p>
+
+      <div className="score-bar">
+        <div
+          className="score-bar-fill"
+          style={{ width: `${result.score}%` }}
+        />
       </div>
+    </div>
 
       <div>
         <h3>Strengths</h3>
