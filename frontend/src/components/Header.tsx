@@ -6,7 +6,7 @@ function Header({ title }: HeaderProps) {
   return (
     <header className="site-header">
       <div className="header-container">
-        <a className="brand" href="/" aria-label="CareerForge home">
+        <a className="brand" href="/" aria-label={`${title} home`}>
           <span className="brand-logo" aria-hidden="true">
             <svg viewBox="0 0 48 48" role="img">
               <path
@@ -25,9 +25,7 @@ function Header({ title }: HeaderProps) {
             </svg>
           </span>
 
-          <span className="brand-name">
-            Career<span>Forge</span>
-          </span>
+          <span className="brand-name">{title}</span>
         </a>
 
         <span className="header-badge">
