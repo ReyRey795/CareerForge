@@ -1,5 +1,4 @@
 type ResumeUploadProps = {
-  // App owns the resume text so it can be shared with future features.
   resumeText: string
   setResumeText: (text: string) => void
   onClose: () => void
@@ -11,32 +10,43 @@ function ResumeUpload({
   onClose,
 }: ResumeUploadProps) {
   return (
-    <section>
-      <h2>Add your resume</h2>
+    <div className="document-editor">
+      <div className="editor-heading">
+        <div>
+          <h3>Resume Content</h3>
+          <p>Paste the text from your current resume.</p>
+        </div>
 
-      <p>
-        Upload an existing resume or paste your resume text below.
-      </p>
+        <button
+          className="close-button"
+          type="button"
+          onClick={onClose}
+          aria-label="Close resume editor"
+        >
+          ×
+        </button>
+      </div>
 
-      {/* Placeholder until file upload is implemented */}
-      <button type="button">
-        Choose Resume File
-      </button>
+      <label className="field-label" htmlFor="resume-text">
+        Resume text
+      </label>
 
       <textarea
+        id="resume-text"
         value={resumeText}
         onChange={(event) => setResumeText(event.target.value)}
-        placeholder="Paste your resume here"
-        rows={10}
+        placeholder="Paste your resume here..."
+        rows={12}
       />
 
-      <button
-        type="button"
-        onClick={onClose}
-      >
-        Close
-      </button>
-    </section>
+      <div className="editor-footer">
+        <span>{resumeText.length.toLocaleString()} characters</span>
+
+        <button className="done-button" type="button" onClick={onClose}>
+          Done
+        </button>
+      </div>
+    </div>
   )
 }
 
