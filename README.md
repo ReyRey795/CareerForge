@@ -1,32 +1,53 @@
 # CareerForge
 
-CareerForge is an AI-powered web application that helps job seekers build stronger applications by comparing resumes against job descriptions, identifying skill gaps, and generating tailored application materials.
+CareerForge is a resume analysis application designed to help job seekers improve their resumes by comparing them against a job description and identifying skill gaps.
 
-The project is being built from the ground up as a portfolio application to demonstrate modern software engineering practices, including React, TypeScript, component architecture, state management, backend API integration, and AI-powered development.
+This project is being built as part of my software engineering portfolio while I transition into software engineering. The goal is to build a modern full-stack application while applying software engineering best practices throughout the development process.
 
 ---
 
-## Current Features
+## 🚧 Current Status
 
-- Upload or paste a resume
+**Current Milestone:** Resume Skill Matching Engine ✅
+
+CareerForge can currently:
+
+- Compare a resume against a job description
+- Identify matching technical skills
+- Identify missing technical skills
+- Calculate a resume match percentage
+- Display personalized improvement suggestions
+
+This project is actively under development, with new features being added incrementally.
+
+---
+
+## Features
+
+### Current Features
+
+- Upload or paste resume text
 - Paste a job description
-- Mock resume analysis workflow
-- Reusable React component architecture
-- State management using React Hooks
-- Responsive user interface built with React and TypeScript
+- Analyze resumes against a predefined technical skill database
+- Calculate a resume match score
+- Display matching skills
+- Display missing skills
+- Provide improvement suggestions
+- Responsive React component architecture
 
 ---
 
 ## Planned Features
 
 - AI-powered resume analysis
-- Resume-to-job description comparison
-- Skill gap identification
-- Resume improvement suggestions
-- Tailored cover letter generation
-- ATS-friendly recommendations
-- User authentication
-- Personal dashboard for saved analyses
+- ATS optimization recommendations
+- Dynamic skill extraction (replace hard-coded skill list)
+- Resume file uploads (.pdf & .docx)
+- Backend API (FastAPI)
+- User accounts and saved analyses
+- Resume version tracking
+- Job application dashboard
+- Cover letter generation
 
 ---
 
@@ -37,44 +58,62 @@ The project is being built from the ground up as a portfolio application to demo
 - React
 - TypeScript
 - Vite
+- CSS
 
-### Backend (Planned)
+### Planned Backend
 
 - FastAPI
 - Python
 - OpenAI API
 
----
+### Development Tools
 
-## Current Architecture
-
-```text
-src/
-├── components/
-│   ├── ActionButton.tsx
-│   ├── Header.tsx
-│   ├── ResumeUpload.tsx
-│   └── JobDescription.tsx
-│
-├── App.tsx
-```
-
-CareerForge currently follows a component-based architecture where `App.tsx` serves as the single source of truth for application state. Resume and job description data are managed in the parent component and passed to child components through props, creating a predictable one-way data flow.
+- Git
+- GitHub
+- npm
+- VS Code
 
 ---
 
-## Getting Started
+## How It Works
+
+1. User enters a resume.
+2. User pastes a job description.
+3. CareerForge analyzes both documents.
+4. The application:
+   - Detects required skills
+   - Identifies matching skills
+   - Identifies missing skills
+   - Calculates a match percentage
+   - Displays recommendations
+
+---
+
+## What I've Learned
+
+This project has strengthened my understanding of:
+
+- React Components
+- Component Communication
+- State Management
+- TypeScript
+- Array Methods
+  - filter()
+  - includes()
+- Separation of Concerns
+- Reusable Utility Functions
+- Conditional Rendering
+- Git Workflow
+- Debugging & Testing
+
+---
+
+## Running the Project
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/ReyRey795/CareerForge.git
-```
-
-Navigate to the frontend project:
-
-```bash
-cd CareerForge/frontend
+git clone <repository-url>
 ```
 
 Install dependencies:
@@ -89,63 +128,24 @@ Start the development server:
 npm run dev
 ```
 
-Open your browser at:
+---
 
-```text
-http://localhost:5173
-```
+## Future Goals
+
+CareerForge is intended to become a complete AI-powered career assistant capable of helping users:
+
+- Optimize resumes
+- Generate tailored cover letters
+- Track job applications
+- Prepare for interviews
+- Improve ATS compatibility
 
 ---
 
-## Roadmap
+## Author
 
-- [x] Initial React + TypeScript setup
-- [x] Landing page
-- [x] Reusable component architecture
-- [x] Resume input component
-- [x] Job description input component
-- [x] React state management
-- [x] Mock resume analysis workflow
-- [ ] Resume file upload
-- [ ] Resume comparison engine
-- [ ] Backend API integration
-- [ ] AI-powered resume analysis
-- [ ] Cover letter generation
-- [ ] Authentication
-- [ ] User dashboard
+**Reynaldo Serrano**
 
----
+Army Veteran | Software Engineering Student | Aspiring Full-Stack Software Engineer
 
-## Development Philosophy
-
-CareerForge is being developed incrementally, with each feature built using software engineering best practices rather than simply making the application work.
-
-Current development focuses on:
-
-- Building reusable React components
-- Maintaining a clean project architecture
-- Following a single source of truth for state management
-- Writing maintainable and scalable TypeScript code
-- Preparing the frontend for future backend and AI integration
-
----
-
-## Why I Built CareerForge
-
-I built CareerForge to strengthen my software engineering skills while solving a common challenge faced by job seekers: tailoring resumes to specific job descriptions.
-
-Rather than following tutorials, I'm designing and implementing the application one feature at a time to gain practical experience with frontend architecture, state management, backend integration, and AI-powered application development.
-
-The goal is to create a real-world portfolio project that demonstrates not only technical ability but also software engineering thought processes and best practices.
-
----
-
-## Future Enhancements
-
-- Resume scoring
-- Multiple resume management
-- AI interview preparation
-- Company-specific application optimization
-- Export tailored resumes
-- Analytics dashboard
-- Cloud deployment
+Building CareerForge one feature at a time while documenting the learning journey.
