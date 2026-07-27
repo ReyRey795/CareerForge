@@ -98,12 +98,7 @@ function App() {
         />
 
         {analysisResult && (
-          <AnalysisResult
-            score={analysisResult.score}
-            strengths={analysisResult.strengths}
-            missingSkills={analysisResult.missingSkills}
-            suggestions={analysisResult.suggestions}
-          />
+          <AnalysisResult result={analysisResult} />
         )}
       </section>
     </main>
