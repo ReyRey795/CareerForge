@@ -1,22 +1,25 @@
 # CareerForge
 
-CareerForge is a resume analysis application designed to help job seekers improve their resumes by comparing them against a job description and identifying skill gaps.
+CareerForge is a resume analysis application designed to help job seekers strengthen their applications by comparing a resume against a job description, identifying skill gaps, calculating a match score, and generating targeted improvement suggestions.
 
-This project is being built as part of my software engineering portfolio while I transition into software engineering. The goal is to build a modern full-stack application while applying software engineering best practices throughout the development process.
+This project is being built as part of my software engineering portfolio while I transition into software engineering. The goal is to develop a modern full-stack application while applying software engineering best practices throughout the development process.
 
 ---
 
 ## 🚧 Current Status
 
-**Current Milestone:** Resume Skill Matching Engine ✅
+**Current Milestone:** Dynamic Resume Skill Analysis ✅
 
 CareerForge can currently:
 
-- Compare a resume against a job description
+- Compare resume text against a job description
+- Detect recognized technical skills required by the position
 - Identify matching technical skills
 - Identify missing technical skills
 - Calculate a resume match percentage
-- Display personalized improvement suggestions
+- Categorize the result by match strength
+- Generate dynamic improvement suggestions
+- Display results in a responsive analysis dashboard
 
 This project is actively under development, with new features being added incrementally.
 
@@ -26,28 +29,75 @@ This project is actively under development, with new features being added increm
 
 ### Current Features
 
-- Upload or paste resume text
-- Paste a job description
-- Analyze resumes against a predefined technical skill database
-- Calculate a resume match score
-- Display matching skills
-- Display missing skills
-- Provide improvement suggestions
-- Responsive React component architecture
+- Paste resume text directly into the application
+- Paste a target job description
+- Analyze both documents using a predefined technical skill database
+- Calculate a resume-to-job match score
+- Display required, matching, and missing skills
+- Generate suggestions based on the analysis results
+- Display match categories:
+  - Excellent Match
+  - Good Match
+  - Fair Match
+  - Needs Improvement
+- Character counters for both input sections
+- Loading state during analysis
+- Accessible match-score progress bar
+- Responsive dark-themed interface
+- Custom teal-and-gold technology-inspired design
+- Reusable React component architecture
 
 ---
 
-## Planned Features
+## Recognized Skills
 
-- AI-powered resume analysis
-- ATS optimization recommendations
-- Dynamic skill extraction (replace hard-coded skill list)
-- Resume file uploads (.pdf & .docx)
-- Backend API (FastAPI)
-- User accounts and saved analyses
-- Resume version tracking
-- Job application dashboard
-- Cover letter generation
+The current skill-matching engine recognizes:
+
+- React
+- TypeScript
+- JavaScript
+- Python
+- Java
+- Git
+- AWS
+- Docker
+- Agile
+
+The skill library will continue to expand as the analysis engine develops.
+
+---
+
+## How It Works
+
+1. The user enters resume text.
+2. The user pastes a job description.
+3. CareerForge checks the job description for recognized skills.
+4. Skills found in the job description are treated as required skills.
+5. CareerForge checks the resume for those required skills.
+6. The application:
+   - Identifies matching skills
+   - Identifies missing skills
+   - Calculates a match percentage
+   - Assigns a match category
+   - Generates personalized improvement suggestions
+7. The results are displayed in an interactive analysis dashboard.
+
+CareerForge uses word-boundary matching to prevent similar technology names from being incorrectly matched. For example, `Java` is not counted simply because `JavaScript` appears in the text.
+
+---
+
+## Dynamic Suggestions
+
+CareerForge generates recommendations based on the analysis rather than displaying the same suggestions for every result.
+
+Depending on the resume and job description, the application may recommend:
+
+- Demonstrating missing skills through projects or experience
+- Moving important matched skills higher on the resume
+- Adding measurable accomplishments
+- Strengthening examples for partially matched positions
+- Tailoring the professional summary to a strong-match position
+- Providing a more detailed job description when no recognized skills are found
 
 ---
 
@@ -75,17 +125,68 @@ This project is actively under development, with new features being added increm
 
 ---
 
-## How It Works
+## Project Structure
 
-1. User enters a resume.
-2. User pastes a job description.
-3. CareerForge analyzes both documents.
-4. The application:
-   - Detects required skills
-   - Identifies matching skills
-   - Identifies missing skills
-   - Calculates a match percentage
-   - Displays recommendations
+```text
+CareerForge/
+└── frontend/
+    ├── src/
+    │   ├── components/
+    │   │   ├── ActionButton.tsx
+    │   │   ├── AnalysisResult.tsx
+    │   │   ├── Header.tsx
+    │   │   ├── JobDescription.tsx
+    │   │   └── ResumeUpload.tsx
+    │   ├── utils/
+    │   │   └── analyzeResume.ts
+    │   ├── App.css
+    │   ├── App.tsx
+    │   ├── index.css
+    │   └── main.tsx
+    └── package.json
+```
+
+---
+
+## Planned Features
+
+- Expand the recognized skill library
+- Support skill aliases such as `Node.js` and `NodeJS`
+- Support multi-word skills such as `REST APIs`
+- Improve text normalization and skill matching
+- Separate required and preferred qualifications
+- Detect experience-level requirements
+- Detect education and certification requirements
+- AI-powered resume analysis
+- ATS optimization recommendations
+- Dynamic skill extraction to replace the predefined skill list
+- Resume file uploads for PDF and Word documents
+- Backend API using FastAPI
+- User accounts and saved analyses
+- Resume version tracking
+- Job application dashboard
+- Cover letter generation
+- Automated testing
+- Public deployment
+
+---
+
+## Current Limitations
+
+CareerForge is still under active development.
+
+The current analyzer:
+
+- Uses a predefined list of recognized skills
+- Relies on keyword matching
+- Does not yet understand the context in which a skill is mentioned
+- Does not distinguish between required and preferred qualifications
+- Does not evaluate years of experience
+- Does not currently process PDF or Word files
+- Does not save previous analyses
+- Does not yet use an external AI service or backend
+
+A skill appearing in a resume does not necessarily prove professional experience with that skill. The current version only determines whether the recognized term appears in the provided text.
 
 ---
 
@@ -93,18 +194,24 @@ This project is actively under development, with new features being added increm
 
 This project has strengthened my understanding of:
 
-- React Components
-- Component Communication
-- State Management
-- TypeScript
-- Array Methods
-  - filter()
-  - includes()
-- Separation of Concerns
-- Reusable Utility Functions
-- Conditional Rendering
-- Git Workflow
-- Debugging & Testing
+- React components
+- Component communication through props
+- State management with React hooks
+- TypeScript types and interfaces
+- Array methods
+  - `filter()`
+  - `includes()`
+  - `map()`
+- Regular expressions
+- Separation of concerns
+- Reusable utility functions
+- Conditional rendering
+- Dynamic recommendation logic
+- Responsive design
+- CSS Grid and Flexbox
+- Accessible interface design
+- Git workflow
+- Debugging and testing
 
 ---
 
@@ -114,6 +221,12 @@ Clone the repository:
 
 ```bash
 git clone <repository-url>
+```
+
+Move into the frontend directory:
+
+```bash
+cd CareerForge/frontend
 ```
 
 Install dependencies:
@@ -128,6 +241,12 @@ Start the development server:
 npm run dev
 ```
 
+Open the local URL shown in the terminal, typically:
+
+```text
+http://localhost:5173
+```
+
 ---
 
 ## Future Goals
@@ -139,6 +258,8 @@ CareerForge is intended to become a complete AI-powered career assistant capable
 - Track job applications
 - Prepare for interviews
 - Improve ATS compatibility
+- Save and compare different resume versions
+- Receive job-specific application recommendations
 
 ---
 
