@@ -16,21 +16,21 @@ type AnalysisResultData = {
 }
 
 function App() {
-  // Form visibility
   const [showResumeForm, setShowResumeForm] = useState(false)
   const [showJobDescriptionForm, setShowJobDescriptionForm] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
-  // User input
   const [resumeText, setResumeText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
 
-  // Analysis result
   const [analysisResult, setAnalysisResult] =
     useState<AnalysisResultData | null>(null)
 
+  const canAnalyze =
+    resumeText.trim().length > 0 && jobDescription.trim().length > 0
+
   function handleAnalyze() {
-    if (!resumeText.trim() || !jobDescription.trim()) {
+    if (!canAnalyze || isAnalyzing) {
       return
     }
 
@@ -57,50 +57,153 @@ function App() {
   }
 
   return (
-    <main>
+    <main className="app">
       <Header title="CareerForge" />
 
-      <section>
-        <h1>Build stronger job applications</h1>
+      <div className="page-container">
+        <section className="hero-section">
+          <span className="eyebrow">
+            <span aria-hidden="true">✦</span>
+            Smart resume analysis
+          </span>
 
-        <p>
-          Upload your resume, compare it with a job description, and receive
-          AI-powered suggestions.
-        </p>
+          <h1>
+            Build <span>stronger</span> job applications
+          </h1>
 
-        <ActionButton
-          text="Upload Resume"
-          onClick={() => setShowResumeForm(true)}
-        />
+          <p>
+            Compare your resume with a job description, discover skill gaps,
+            and receive clear recommendations designed to strengthen your
+            application.
+          </p>
+        </section>
 
-        {showResumeForm && (
-          <ResumeUpload
-            resumeText={resumeText}
-            setResumeText={setResumeText}
-            onClose={() => setShowResumeForm(false)}
-          />
+        <section className="workspace" aria-label="Resume analysis workspace">
+          <div className="input-grid">
+            <article className="input-card">
+              <div className="card-heading">
+                <span className="step-number">1</span>
+
+                <div className="card-title">
+                  <p className="section-kicker">Candidate profile</p>
+                  <h2>Your Resume</h2>
+                  <p>Paste your resume text to begin the comparison.</p>
+                </div>
+
+                <span className="card-symbol" aria-hidden="true">
+                  ▤
+                </span>
+              </div>
+
+              <div className="card-content">
+                <ActionButton
+                  text={resumeText ? 'Edit Resume' : 'Add Resume'}
+                  onClick={() => setShowResumeForm(true)}
+                />
+
+                {resumeText ? (
+                  <p className="input-status">
+                    <span aria-hidden="true">✓</span>
+                    Resume added · {resumeText.length.toLocaleString()}{' '}
+                    characters
+                  </p>
+                ) : (
+                  <p className="input-pending">
+                    Resume content has not been added.
+                  </p>
+                )}
+
+                {showResumeForm && (
+                  <ResumeUpload
+                    resumeText={resumeText}
+                    setResumeText={setResumeText}
+                    onClose={() => setShowResumeForm(false)}
+                  />
+                )}
+              </div>
+            </article>
+
+            <article className="input-card">
+              <div className="card-heading">
+                <span className="step-number">2</span>
+
+                <div className="card-title">
+                  <p className="section-kicker">Target opportunity</p>
+                  <h2>Job Description</h2>
+                  <p>Paste the job posting you want to compare.</p>
+                </div>
+
+                <span className="card-symbol" aria-hidden="true">
+                  ◫
+                </span>
+              </div>
+
+              <div className="card-content">
+                <ActionButton
+                  text={
+                    jobDescription
+                      ? 'Edit Job Description'
+                      : 'Add Job Description'
+                  }
+                  onClick={() => setShowJobDescriptionForm(true)}
+                />
+
+                {jobDescription ? (
+                  <p className="input-status">
+                    <span aria-hidden="true">✓</span>
+                    Job description added ·{' '}
+                    {jobDescription.length.toLocaleString()} characters
+                  </p>
+                ) : (
+                  <p className="input-pending">
+                    Job description has not been added.
+                  </p>
+                )}
+
+                {showJobDescriptionForm && (
+                  <JobDescription
+                    jobDescription={jobDescription}
+                    setJobDescription={setJobDescription}
+                    onClose={() => setShowJobDescriptionForm(false)}
+                  />
+                )}
+              </div>
+            </article>
+          </div>
+
+          <div className="analyze-section">
+            <ActionButton
+              text={isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
+              onClick={handleAnalyze}
+              variant="primary"
+              disabled={!canAnalyze || isAnalyzing}
+            />
+
+            <p className="privacy-note">
+              <span aria-hidden="true">♙</span>
+              Your text remains in this browser during the current analysis.
+            </p>
+
+            {!canAnalyze && (
+              <p className="analyze-hint">
+                Add both documents to activate the analysis.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {isAnalyzing && (
+          <section className="loading-card" aria-live="polite">
+            <div className="loading-spinner" />
+            <div>
+              <strong>Analyzing your application</strong>
+              <p>Comparing required, matching, and missing skills...</p>
+            </div>
+          </section>
         )}
-
-        <ActionButton
-          text="Paste Job Description"
-          onClick={() => setShowJobDescriptionForm(true)}
-        />
-
-        {showJobDescriptionForm && (
-          <JobDescription
-            jobDescription={jobDescription}
-            setJobDescription={setJobDescription}
-            onClose={() => setShowJobDescriptionForm(false)}
-          />
-        )}
-
-        <ActionButton
-          text={isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
-          onClick={handleAnalyze}
-        />
 
         {analysisResult && <AnalysisResult result={analysisResult} />}
-      </section>
+      </div>
     </main>
   )
 }
