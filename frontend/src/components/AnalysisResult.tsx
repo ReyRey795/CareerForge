@@ -1,5 +1,6 @@
 type AnalysisResultData = {
   score: number
+  requiredSkills: string[]
   strengths: string[]
   missingSkills: string[]
   suggestions: string[]
@@ -25,26 +26,48 @@ function getScoreLabel(score: number) {
   return 'Needs Improvement'
 }
 
+function getScoreClass(score: number) {
+  if (score >= 90) {
+    return 'excellent'
+  }
+
+  if (score >= 70) {
+    return 'good'
+  }
+
+  if (score >= 50) {
+    return 'fair'
+  }
+
+  return 'needs-improvement'
+}
+
 function AnalysisResult({ result }: AnalysisResultProps) {
   const scoreLabel = getScoreLabel(result.score)
+  const scoreClass = getScoreClass(result.score)
 
   return (
     <section className="analysis-result">
       <h2>Analysis Results</h2>
 
       <div className="score-section">
-      <h3>Match Score</h3>
+        <h3>Match Score</h3>
 
-      <p className="score">{result.score}%</p>
-      <p className="score-label">{scoreLabel}</p>
+        <p className="score">{result.score}%</p>
+        <p className="score-label">{scoreLabel}</p>
 
-      <div className="score-bar">
-        <div
-          className="score-bar-fill"
-          style={{ width: `${result.score}%` }}
-        />
+        <div className="score-bar">
+          <div
+            className={`score-bar-fill ${scoreClass}`}
+            style={{ width: `${result.score}%` }}
+          />
+        </div>
+
+        <p className="score-details">
+          {result.strengths.length} of {result.requiredSkills.length} required
+          skills matched
+        </p>
       </div>
-    </div>
 
       <div>
         <h3>Strengths</h3>

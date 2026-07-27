@@ -9,6 +9,7 @@ import { analyzeResume } from './utils/analyzeResume'
 
 type AnalysisResultData = {
   score: number
+  requiredSkills: string[]
   strengths: string[]
   missingSkills: string[]
   suggestions: string[]
@@ -41,6 +42,7 @@ function App() {
 
       setAnalysisResult({
         score: result.percentMatched,
+        requiredSkills: result.requiredSkills,
         strengths: result.matchedSkills,
         missingSkills: result.missingSkills,
         suggestions: [
@@ -62,8 +64,8 @@ function App() {
         <h1>Build stronger job applications</h1>
 
         <p>
-          Upload your resume, compare it with a job description,
-          and receive AI-powered suggestions.
+          Upload your resume, compare it with a job description, and receive
+          AI-powered suggestions.
         </p>
 
         <ActionButton
@@ -97,9 +99,7 @@ function App() {
           onClick={handleAnalyze}
         />
 
-        {analysisResult && (
-          <AnalysisResult result={analysisResult} />
-        )}
+        {analysisResult && <AnalysisResult result={analysisResult} />}
       </section>
     </main>
   )
