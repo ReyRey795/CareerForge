@@ -1,22 +1,119 @@
+type SkillDefinition = {
+  name: string
+  aliases: string[]
+}
+
 export function analyzeResume(
   resumeText: string,
   jobDescription: string
 ) {
-  const knownSkills = [
-    'React',
-    'TypeScript',
-    'JavaScript',
-    'Python',
-    'Java',
-    'Git',
-    'AWS',
-    'Docker',
-    'Agile',
+  const knownSkills: SkillDefinition[] = [
+    {
+      name: 'React',
+      aliases: ['React', 'React.js', 'ReactJS'],
+    },
+    {
+      name: 'TypeScript',
+      aliases: ['TypeScript'],
+    },
+    {
+      name: 'JavaScript',
+      aliases: ['JavaScript', 'ECMAScript'],
+    },
+    {
+      name: 'Node.js',
+      aliases: ['Node.js', 'NodeJS'],
+    },
+    {
+      name: 'Python',
+      aliases: ['Python'],
+    },
+    {
+      name: 'Java',
+      aliases: ['Java'],
+    },
+    {
+      name: 'C#',
+      aliases: ['C#', 'C Sharp'],
+    },
+    {
+      name: '.NET',
+      aliases: ['.NET', 'dotnet'],
+    },
+    {
+      name: 'FastAPI',
+      aliases: ['FastAPI'],
+    },
+    {
+      name: 'Git',
+      aliases: ['Git'],
+    },
+    {
+      name: 'GitHub',
+      aliases: ['GitHub'],
+    },
+    {
+      name: 'AWS',
+      aliases: ['AWS', 'Amazon Web Services'],
+    },
+    {
+      name: 'Docker',
+      aliases: ['Docker'],
+    },
+    {
+      name: 'PostgreSQL',
+      aliases: ['PostgreSQL', 'Postgres'],
+    },
+    {
+      name: 'SQL',
+      aliases: ['SQL'],
+    },
+    {
+      name: 'REST APIs',
+      aliases: [
+        'REST API',
+        'REST APIs',
+        'RESTful API',
+        'RESTful APIs',
+      ],
+    },
+    {
+      name: 'CI/CD',
+      aliases: ['CI/CD', 'CI-CD', 'CICD'],
+    },
+    {
+      name: 'Agile',
+      aliases: ['Agile'],
+    },
+    {
+      name: 'Scrum',
+      aliases: ['Scrum'],
+    },
   ]
 
-  function containsSkill(text: string, skill: string) {
-    const pattern = new RegExp(`\\b${skill}\\b`, 'i')
-    return pattern.test(text)
+  function escapeRegExp(value: string) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  }
+
+  function createSkillPattern(alias: string) {
+    const aliasPattern = alias
+      .trim()
+      .split(/\s+/)
+      .map(escapeRegExp)
+      .join('\\s+')
+
+    return new RegExp(
+      `(^|[^A-Za-z0-9])${aliasPattern}(?=$|[^A-Za-z0-9])`,
+      'i'
+    )
+  }
+
+  function containsSkill(text: string, aliases: string[]) {
+    return aliases.some((alias) => {
+      const pattern = createSkillPattern(alias)
+
+      return pattern.test(text)
+    })
   }
 
   function generateSuggestions(
@@ -72,22 +169,28 @@ export function analyzeResume(
     return suggestions
   }
 
-  const requiredSkills = knownSkills.filter((skill) =>
-    containsSkill(jobDescription, skill)
+  const requiredSkillDefinitions = knownSkills.filter((skill) =>
+    containsSkill(jobDescription, skill.aliases)
   )
 
-  const matchedSkills = requiredSkills.filter((skill) =>
-    containsSkill(resumeText, skill)
+  const requiredSkills = requiredSkillDefinitions.map(
+    (skill) => skill.name
+  )
+
+  const matchedSkills = requiredSkillDefinitions
+    .filter((skill) =>
+      containsSkill(resumeText, skill.aliases)
+    )
+    .map((skill) => skill.name)
+
+  const missingSkills = requiredSkills.filter(
+    (skill) => !matchedSkills.includes(skill)
   )
 
   const percentMatched =
     requiredSkills.length === 0
       ? 0
       : (matchedSkills.length / requiredSkills.length) * 100
-
-  const missingSkills = requiredSkills.filter(
-    (skill) => !matchedSkills.includes(skill)
-  )
 
   const suggestions = generateSuggestions(
     requiredSkills,
