@@ -9,9 +9,14 @@ import { analyzeResume } from './utils/analyzeResume'
 
 type AnalysisResultData = {
   score: number
+  requiredScore: number
+  preferredScore: number
   requiredSkills: string[]
-  strengths: string[]
-  missingSkills: string[]
+  preferredSkills: string[]
+  matchedRequiredSkills: string[]
+  missingRequiredSkills: string[]
+  matchedPreferredSkills: string[]
+  missingPreferredSkills: string[]
   suggestions: string[]
 }
 
@@ -90,9 +95,14 @@ function App() {
 
       setAnalysisResult({
         score: result.percentMatched,
+        requiredScore: result.requiredScore,
+        preferredScore: result.preferredScore,
         requiredSkills: result.requiredSkills,
-        strengths: result.matchedSkills,
-        missingSkills: result.missingSkills,
+        preferredSkills: result.preferredSkills,
+        matchedRequiredSkills: result.matchedRequiredSkills,
+        missingRequiredSkills: result.missingRequiredSkills,
+        matchedPreferredSkills: result.matchedPreferredSkills,
+        missingPreferredSkills: result.missingPreferredSkills,
         suggestions: result.suggestions,
       })
 
@@ -290,7 +300,8 @@ function App() {
             <div>
               <strong>Analyzing your application</strong>
               <p>
-                Comparing required, matching, and missing skills...
+                Comparing required, preferred, matching, and missing
+                skills...
               </p>
             </div>
           </section>

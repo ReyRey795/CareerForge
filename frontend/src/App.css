@@ -1186,4 +1186,140 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  /* Required and preferred skill dashboard */
+
+.results-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.score-card {
+  grid-row: span 2;
+}
+
+.skill-summary-card {
+  min-height: 220px;
+}
+
+.suggestions-card {
+  grid-column: span 2;
+  min-height: 220px;
+}
+
+.result-category-label {
+  margin: 0 0 0.28rem;
+  color: #5eead4;
+  font-size: 0.65rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.preferred-label {
+  color: #f4c95d;
+}
+
+.preferred-card {
+  border-color: rgba(244, 201, 93, 0.2);
+}
+
+.preferred-card:hover {
+  border-color: rgba(244, 201, 93, 0.42);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.035),
+    0 24px 44px rgba(0, 0, 0, 0.28),
+    0 0 24px rgba(244, 201, 93, 0.06);
+}
+
+.preferred-badge {
+  color: #f4c95d;
+  border-color: rgba(244, 201, 93, 0.7);
+  background-color: rgba(214, 169, 54, 0.09);
+}
+
+.preferred-icon {
+  color: #f4c95d;
+  border: 1px solid rgba(244, 201, 93, 0.8);
+  box-shadow: 0 0 10px rgba(244, 201, 93, 0.12);
+}
+
+.preferred-missing-icon {
+  color: #f4c95d;
+  font-size: 1.15rem;
+  text-shadow: 0 0 8px rgba(244, 201, 93, 0.28);
+}
+
+.score-breakdown {
+  display: flex;
+  margin-top: 1.25rem;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.score-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(45, 212, 191, 0.18);
+  border-radius: 10px;
+  background-color: rgba(20, 184, 166, 0.045);
+}
+
+.score-breakdown-row > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.breakdown-label {
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.breakdown-weight {
+  color: #9eacbb;
+  font-size: 0.66rem;
+}
+
+.score-breakdown-row strong {
+  color: #5eead4;
+  font-size: 0.95rem;
+}
+
+.preferred-breakdown {
+  border-color: rgba(244, 201, 93, 0.2);
+  background-color: rgba(214, 169, 54, 0.045);
+}
+
+.preferred-breakdown strong {
+  color: #f4c95d;
+}
+
+@media (max-width: 1100px) {
+  .results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .score-card {
+    grid-row: auto;
+  }
+
+  .suggestions-card {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 580px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .suggestions-card {
+    grid-column: span 1;
+  }
+}
 }

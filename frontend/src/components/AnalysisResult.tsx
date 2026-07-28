@@ -1,8 +1,13 @@
 type AnalysisResultData = {
   score: number
+  requiredScore: number
+  preferredScore: number
   requiredSkills: string[]
-  strengths: string[]
-  missingSkills: string[]
+  preferredSkills: string[]
+  matchedRequiredSkills: string[]
+  missingRequiredSkills: string[]
+  matchedPreferredSkills: string[]
+  missingPreferredSkills: string[]
   suggestions: string[]
 }
 
@@ -46,6 +51,9 @@ function AnalysisResult({ result }: AnalysisResultProps) {
   const scoreLabel = getScoreLabel(result.score)
   const scoreClass = getScoreClass(result.score)
 
+  const hasRequiredSkills = result.requiredSkills.length > 0
+  const hasPreferredSkills = result.preferredSkills.length > 0
+
   return (
     <section className="analysis-result">
       <div className="results-heading">
@@ -65,7 +73,7 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
       <div className="results-grid">
         <article className="result-card score-card">
-          <p className="result-card-label">Match score</p>
+          <p className="result-card-label">Overall match score</p>
 
           <p className={`score ${scoreClass}`}>{result.score}%</p>
           <p className={`score-label ${scoreClass}`}>{scoreLabel}</p>
@@ -73,14 +81,16 @@ function AnalysisResult({ result }: AnalysisResultProps) {
           <div
             className="score-bar"
             role="progressbar"
-            aria-label="Resume match score"
+            aria-label="Overall resume match score"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={result.score}
           >
             <div
               className={`score-bar-fill ${scoreClass}`}
-              style={{ width: `${Math.min(result.score, 100)}%` }}
+              style={{
+                width: `${Math.min(result.score, 100)}%`,
+              }}
             />
           </div>
 
@@ -90,48 +100,106 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             <span>100%</span>
           </div>
 
-          <p className="score-details">
-            <strong>{result.strengths.length}</strong> of{' '}
-            <strong>{result.requiredSkills.length}</strong> required skills
-            matched
-          </p>
+          <div className="score-breakdown">
+            {hasRequiredSkills && (
+              <div className="score-breakdown-row">
+                <div>
+                  <span className="breakdown-label">
+                    Required skills
+                  </span>
+
+                  {hasPreferredSkills && (
+                    <span className="breakdown-weight">
+                      80% weight
+                    </span>
+                  )}
+                </div>
+
+                <strong>{result.requiredScore}%</strong>
+              </div>
+            )}
+
+            {hasPreferredSkills && (
+              <div className="score-breakdown-row preferred-breakdown">
+                <div>
+                  <span className="breakdown-label">
+                    Preferred skills
+                  </span>
+
+                  {hasRequiredSkills && (
+                    <span className="breakdown-weight">
+                      20% weight
+                    </span>
+                  )}
+                </div>
+
+                <strong>{result.preferredScore}%</strong>
+              </div>
+            )}
+          </div>
+
+          {hasRequiredSkills ? (
+            <p className="score-details">
+              <strong>{result.matchedRequiredSkills.length}</strong> of{' '}
+              <strong>{result.requiredSkills.length}</strong> required
+              skills matched
+            </p>
+          ) : (
+            <p className="score-details">
+              No required skills were detected.
+            </p>
+          )}
         </article>
 
-        <article className="result-card strengths-card">
+        <article className="result-card skill-summary-card">
           <div className="result-card-heading">
-            <h3>Strengths</h3>
+            <div>
+              <p className="result-category-label">Required</p>
+              <h3>Matched Skills</h3>
+            </div>
+
             <span className="count-badge">
-              {result.strengths.length}
+              {result.matchedRequiredSkills.length}
             </span>
           </div>
 
-          {result.strengths.length > 0 ? (
+          {result.matchedRequiredSkills.length > 0 ? (
             <ul className="skill-list">
-              {result.strengths.map((strength) => (
-                <li key={strength}>
-                  <span className="list-icon success-icon">✓</span>
-                  {strength}
+              {result.matchedRequiredSkills.map((skill) => (
+                <li key={skill}>
+                  <span className="list-icon success-icon">
+                    ✓
+                  </span>
+                  {skill}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="empty-message">No matching skills were detected.</p>
+            <p className="empty-message">
+              No required skills were matched.
+            </p>
           )}
         </article>
 
-        <article className="result-card missing-card">
+        <article className="result-card skill-summary-card">
           <div className="result-card-heading">
-            <h3>Missing Skills</h3>
+            <div>
+              <p className="result-category-label">Required</p>
+              <h3>Missing Skills</h3>
+            </div>
+
             <span className="count-badge gold-badge">
-              {result.missingSkills.length}
+              {result.missingRequiredSkills.length}
             </span>
           </div>
 
-          {result.missingSkills.length > 0 ? (
+          {result.missingRequiredSkills.length > 0 ? (
             <ul className="skill-list">
-              {result.missingSkills.map((skill) => (
+              {result.missingRequiredSkills.map((skill) => (
                 <li key={skill}>
-                  <span className="list-icon missing-icon">•</span>
+                  <span className="list-icon missing-icon">
+                    •
+                  </span>
                   {skill}
                 </li>
               ))}
@@ -143,9 +211,85 @@ function AnalysisResult({ result }: AnalysisResultProps) {
           )}
         </article>
 
+        <article className="result-card skill-summary-card preferred-card">
+          <div className="result-card-heading">
+            <div>
+              <p className="result-category-label preferred-label">
+                Preferred
+              </p>
+              <h3>Matched Skills</h3>
+            </div>
+
+            <span className="count-badge preferred-badge">
+              {result.matchedPreferredSkills.length}
+            </span>
+          </div>
+
+          {!hasPreferredSkills ? (
+            <p className="empty-message">
+              No preferred skills were detected in the job description.
+            </p>
+          ) : result.matchedPreferredSkills.length > 0 ? (
+            <ul className="skill-list">
+              {result.matchedPreferredSkills.map((skill) => (
+                <li key={skill}>
+                  <span className="list-icon preferred-icon">
+                    ✓
+                  </span>
+                  {skill}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-message">
+              No preferred skills were matched.
+            </p>
+          )}
+        </article>
+
+        <article className="result-card skill-summary-card preferred-card">
+          <div className="result-card-heading">
+            <div>
+              <p className="result-category-label preferred-label">
+                Preferred
+              </p>
+              <h3>Missing Skills</h3>
+            </div>
+
+            <span className="count-badge preferred-badge">
+              {result.missingPreferredSkills.length}
+            </span>
+          </div>
+
+          {!hasPreferredSkills ? (
+            <p className="empty-message">
+              No preferred skills were detected in the job description.
+            </p>
+          ) : result.missingPreferredSkills.length > 0 ? (
+            <ul className="skill-list">
+              {result.missingPreferredSkills.map((skill) => (
+                <li key={skill}>
+                  <span className="list-icon preferred-missing-icon">
+                    •
+                  </span>
+                  {skill}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-message">
+              No preferred skills appear to be missing.
+            </p>
+          )}
+        </article>
+
         <article className="result-card suggestions-card">
           <div className="result-card-heading">
-            <h3>Suggestions</h3>
+            <div>
+              <p className="result-category-label">Next steps</p>
+              <h3>Suggestions</h3>
+            </div>
+
             <span className="count-badge">
               {result.suggestions.length}
             </span>
@@ -161,7 +305,9 @@ function AnalysisResult({ result }: AnalysisResultProps) {
               ))}
             </ul>
           ) : (
-            <p className="empty-message">No suggestions are available.</p>
+            <p className="empty-message">
+              No suggestions are available.
+            </p>
           )}
         </article>
       </div>
