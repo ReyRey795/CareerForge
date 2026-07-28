@@ -115,4 +115,85 @@ describe('analyzeResume', () => {
       'Your skills align well with this role. Tailor your summary and accomplishments to the position.'
     )
   })
+
+  it('separates required and preferred skills', () => {
+    const jobDescription = `
+      Required Qualifications:
+      React
+      TypeScript
+      Git
+
+      Preferred Qualifications:
+      AWS
+      Docker
+    `
+
+    const resumeText = `
+      Built React and TypeScript applications using Git
+      and deployed projects to AWS.
+    `
+
+    const result = analyzeResume(resumeText, jobDescription)
+
+    expect(result.requiredSkills).toEqual([
+      'React',
+      'TypeScript',
+      'Git',
+    ])
+
+    expect(result.preferredSkills).toEqual([
+      'AWS',
+      'Docker',
+    ])
+
+    expect(result.matchedRequiredSkills).toEqual([
+      'React',
+      'TypeScript',
+      'Git',
+    ])
+
+    expect(result.missingRequiredSkills).toEqual([])
+
+    expect(result.matchedPreferredSkills).toEqual(['AWS'])
+    expect(result.missingPreferredSkills).toEqual(['Docker'])
+
+    expect(result.requiredScore).toBe(100)
+    expect(result.preferredScore).toBe(50)
+    expect(result.percentMatched).toBe(90)
+  })
+
+  it('gives required skills priority over preferred skills', () => {
+    const jobDescription = `
+      Required Skills:
+      AWS
+      React
+
+      Nice to Have:
+      AWS
+      Docker
+    `
+
+    const resumeText = `
+      Built React applications using AWS.
+    `
+
+    const result = analyzeResume(resumeText, jobDescription)
+
+    expect(result.requiredSkills).toEqual([
+      'React',
+      'AWS',
+    ])
+
+    expect(result.preferredSkills).toEqual([
+      'Docker',
+    ])
+
+    expect(result.matchedRequiredSkills).toEqual([
+      'React',
+      'AWS',
+    ])
+
+    expect(result.matchedPreferredSkills).toEqual([])
+    expect(result.missingPreferredSkills).toEqual(['Docker'])
+  })
 })

@@ -3,6 +3,14 @@ type SkillDefinition = {
   aliases: string[]
 }
 
+type JobSection = 'general' | 'required' | 'preferred'
+
+type JobDescriptionSections = {
+  general: string
+  required: string
+  preferred: string
+}
+
 export function analyzeResume(
   resumeText: string,
   jobDescription: string
@@ -116,15 +124,138 @@ export function analyzeResume(
     })
   }
 
+  function findSkills(text: string) {
+    return knownSkills.filter((skill) =>
+      containsSkill(text, skill.aliases)
+    )
+  }
+
+  function matchSectionHeading(line: string) {
+    const cleanedLine = line
+      .trim()
+      .replace(/^[-•*]\s*/, '')
+
+    const requiredPattern =
+      /^(required(?:\s+(?:skills|qualifications|experience))?|requirements|core requirements|minimum qualifications|basic qualifications|qualifications|must[-\s]?haves?|what we(?:'|’)re looking for)\s*(?::|—|-)?\s*(.*)$/i
+
+    const preferredPattern =
+      /^(preferred(?:\s+(?:skills|qualifications|experience))?|nice[-\s]?to[-\s]?haves?|bonus(?:\s+skills)?|desired qualifications|additional qualifications)\s*(?::|—|-)?\s*(.*)$/i
+
+    const requiredMatch = cleanedLine.match(requiredPattern)
+
+    if (requiredMatch) {
+      return {
+        section: 'required' as JobSection,
+        content: requiredMatch[2].trim(),
+      }
+    }
+
+    const preferredMatch = cleanedLine.match(preferredPattern)
+
+    if (preferredMatch) {
+      return {
+        section: 'preferred' as JobSection,
+        content: preferredMatch[2].trim(),
+      }
+    }
+
+    return null
+  }
+
+  function isLikelyHeading(line: string) {
+    const trimmedLine = line.trim()
+
+    return (
+      trimmedLine.length <= 60 &&
+      trimmedLine.endsWith(':')
+    )
+  }
+
+  function splitJobDescription(
+    text: string
+  ): JobDescriptionSections {
+    const sections: Record<JobSection, string[]> = {
+      general: [],
+      required: [],
+      preferred: [],
+    }
+
+    let currentSection: JobSection = 'general'
+
+    const lines = text.split(/\r?\n/)
+
+    lines.forEach((line) => {
+      const trimmedLine = line.trim()
+
+      if (!trimmedLine) {
+        return
+      }
+
+      const headingMatch = matchSectionHeading(trimmedLine)
+
+      if (headingMatch) {
+        currentSection = headingMatch.section
+
+        if (headingMatch.content) {
+          sections[currentSection].push(headingMatch.content)
+        }
+
+        return
+      }
+
+      if (isLikelyHeading(trimmedLine)) {
+        currentSection = 'general'
+      }
+
+      sections[currentSection].push(trimmedLine)
+    })
+
+    return {
+      general: sections.general.join(' '),
+      required: sections.required.join(' '),
+      preferred: sections.preferred.join(' '),
+    }
+  }
+
+  function calculateScore(
+    requiredScore: number,
+    preferredScore: number,
+    requiredSkillCount: number,
+    preferredSkillCount: number
+  ) {
+    if (
+      requiredSkillCount > 0 &&
+      preferredSkillCount > 0
+    ) {
+      return requiredScore * 0.8 + preferredScore * 0.2
+    }
+
+    if (requiredSkillCount > 0) {
+      return requiredScore
+    }
+
+    if (preferredSkillCount > 0) {
+      return preferredScore
+    }
+
+    return 0
+  }
+
   function generateSuggestions(
     requiredSkills: string[],
-    matchedSkills: string[],
-    missingSkills: string[],
+    matchedRequiredSkills: string[],
+    missingRequiredSkills: string[],
+    preferredSkills: string[],
+    matchedPreferredSkills: string[],
+    missingPreferredSkills: string[],
     percentMatched: number
   ) {
     const suggestions: string[] = []
 
-    if (requiredSkills.length === 0) {
+    const recognizedSkillCount =
+      requiredSkills.length + preferredSkills.length
+
+    if (recognizedSkillCount === 0) {
       suggestions.push(
         'Add a longer job description so CareerForge can identify more required skills.'
       )
@@ -132,9 +263,15 @@ export function analyzeResume(
       return suggestions
     }
 
-    if (missingSkills.length > 0) {
+    if (missingRequiredSkills.length > 0) {
       suggestions.push(
-        `Add relevant experience or projects that demonstrate: ${missingSkills.join(', ')}.`
+        `Add relevant experience or projects that demonstrate these required skills: ${missingRequiredSkills.join(', ')}.`
+      )
+    }
+
+    if (missingPreferredSkills.length > 0) {
+      suggestions.push(
+        `If applicable, highlight experience with these preferred skills: ${missingPreferredSkills.join(', ')}.`
       )
     }
 
@@ -156,9 +293,14 @@ export function analyzeResume(
       )
     }
 
-    if (matchedSkills.length > 0) {
+    const allMatchedSkills = [
+      ...matchedRequiredSkills,
+      ...matchedPreferredSkills,
+    ]
+
+    if (allMatchedSkills.length > 0) {
       suggestions.push(
-        `Highlight your experience with ${matchedSkills.join(', ')} near the top of your resume.`
+        `Highlight your experience with ${allMatchedSkills.join(', ')} near the top of your resume.`
       )
     }
 
@@ -169,41 +311,93 @@ export function analyzeResume(
     return suggestions
   }
 
-  const requiredSkillDefinitions = knownSkills.filter((skill) =>
-    containsSkill(jobDescription, skill.aliases)
+  const sections = splitJobDescription(jobDescription)
+
+  const requiredSkillDefinitions = findSkills(
+    `${sections.general} ${sections.required}`
   )
+
+  const requiredSkillNames = new Set(
+    requiredSkillDefinitions.map((skill) => skill.name)
+  )
+
+  const preferredSkillDefinitions = findSkills(
+    sections.preferred
+  ).filter((skill) => !requiredSkillNames.has(skill.name))
 
   const requiredSkills = requiredSkillDefinitions.map(
     (skill) => skill.name
   )
 
-  const matchedSkills = requiredSkillDefinitions
+  const preferredSkills = preferredSkillDefinitions.map(
+    (skill) => skill.name
+  )
+
+  const matchedRequiredSkills = requiredSkillDefinitions
     .filter((skill) =>
       containsSkill(resumeText, skill.aliases)
     )
     .map((skill) => skill.name)
 
-  const missingSkills = requiredSkills.filter(
-    (skill) => !matchedSkills.includes(skill)
+  const missingRequiredSkills = requiredSkills.filter(
+    (skill) => !matchedRequiredSkills.includes(skill)
   )
 
-  const percentMatched =
+  const matchedPreferredSkills = preferredSkillDefinitions
+    .filter((skill) =>
+      containsSkill(resumeText, skill.aliases)
+    )
+    .map((skill) => skill.name)
+
+  const missingPreferredSkills = preferredSkills.filter(
+    (skill) => !matchedPreferredSkills.includes(skill)
+  )
+
+  const requiredScore =
     requiredSkills.length === 0
       ? 0
-      : (matchedSkills.length / requiredSkills.length) * 100
+      : (matchedRequiredSkills.length /
+          requiredSkills.length) *
+        100
+
+  const preferredScore =
+    preferredSkills.length === 0
+      ? 0
+      : (matchedPreferredSkills.length /
+          preferredSkills.length) *
+        100
+
+  const percentMatched = calculateScore(
+    requiredScore,
+    preferredScore,
+    requiredSkills.length,
+    preferredSkills.length
+  )
 
   const suggestions = generateSuggestions(
     requiredSkills,
-    matchedSkills,
-    missingSkills,
+    matchedRequiredSkills,
+    missingRequiredSkills,
+    preferredSkills,
+    matchedPreferredSkills,
+    missingPreferredSkills,
     percentMatched
   )
 
   return {
     percentMatched: Number(percentMatched.toFixed(1)),
+    requiredScore: Number(requiredScore.toFixed(1)),
+    preferredScore: Number(preferredScore.toFixed(1)),
     requiredSkills,
-    matchedSkills,
-    missingSkills,
+    preferredSkills,
+    matchedRequiredSkills,
+    missingRequiredSkills,
+    matchedPreferredSkills,
+    missingPreferredSkills,
     suggestions,
+
+    // Temporary compatibility with the current App and results UI.
+    matchedSkills: matchedRequiredSkills,
+    missingSkills: missingRequiredSkills,
   }
 }
