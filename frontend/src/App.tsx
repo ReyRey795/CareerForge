@@ -17,25 +17,73 @@ type AnalysisResultData = {
 
 function App() {
   const [showResumeForm, setShowResumeForm] = useState(false)
-  const [showJobDescriptionForm, setShowJobDescriptionForm] = useState(false)
+  const [showJobDescriptionForm, setShowJobDescriptionForm] =
+    useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
 
   const [resumeText, setResumeText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
+  const [validationMessage, setValidationMessage] =
+    useState<string | null>(null)
 
   const [analysisResult, setAnalysisResult] =
     useState<AnalysisResultData | null>(null)
 
-  const canAnalyze =
-    resumeText.trim().length > 0 && jobDescription.trim().length > 0
+  const hasResume = resumeText.trim().length > 0
+  const hasJobDescription = jobDescription.trim().length > 0
+  const canAnalyze = hasResume && hasJobDescription
+
+  function handleResumeTextChange(text: string) {
+    setResumeText(text)
+    setValidationMessage(null)
+
+    if (analysisResult) {
+      setAnalysisResult(null)
+    }
+  }
+
+  function handleJobDescriptionChange(text: string) {
+    setJobDescription(text)
+    setValidationMessage(null)
+
+    if (analysisResult) {
+      setAnalysisResult(null)
+    }
+  }
+
+  function validateInputs() {
+    if (!hasResume && !hasJobDescription) {
+      return 'Add your resume and a job description before starting the analysis.'
+    }
+
+    if (!hasResume) {
+      return 'Add your resume before starting the analysis.'
+    }
+
+    if (!hasJobDescription) {
+      return 'Add a job description before starting the analysis.'
+    }
+
+    return null
+  }
 
   function handleAnalyze() {
-    if (!canAnalyze || isAnalyzing) {
+    if (isAnalyzing) {
       return
     }
 
+    const validationError = validateInputs()
+
+    if (validationError) {
+      setValidationMessage(validationError)
+      return
+    }
+
+    setValidationMessage(null)
     setIsAnalyzing(true)
     setAnalysisResult(null)
+    setShowResumeForm(false)
+    setShowJobDescriptionForm(false)
 
     setTimeout(() => {
       const result = analyzeResume(resumeText, jobDescription)
@@ -50,6 +98,21 @@ function App() {
 
       setIsAnalyzing(false)
     }, 1500)
+  }
+
+  function handleReset() {
+    setResumeText('')
+    setJobDescription('')
+    setAnalysisResult(null)
+    setValidationMessage(null)
+    setShowResumeForm(false)
+    setShowJobDescriptionForm(false)
+    setIsAnalyzing(false)
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
   }
 
   return (
@@ -68,13 +131,16 @@ function App() {
           </h1>
 
           <p>
-            Compare your resume with a job description, discover skill gaps,
-            and receive clear recommendations designed to strengthen your
-            application.
+            Compare your resume with a job description, discover skill
+            gaps, and receive clear recommendations designed to strengthen
+            your application.
           </p>
         </section>
 
-        <section className="workspace" aria-label="Resume analysis workspace">
+        <section
+          className="workspace"
+          aria-label="Resume analysis workspace"
+        >
           <div className="input-grid">
             <article className="input-card">
               <div className="card-heading">
@@ -97,7 +163,7 @@ function App() {
                   onClick={() => setShowResumeForm(true)}
                 />
 
-                {resumeText ? (
+                {hasResume ? (
                   <p className="input-status">
                     <span aria-hidden="true">✓</span>
                     Resume added · {resumeText.length.toLocaleString()}{' '}
@@ -112,7 +178,7 @@ function App() {
                 {showResumeForm && (
                   <ResumeUpload
                     resumeText={resumeText}
-                    setResumeText={setResumeText}
+                    setResumeText={handleResumeTextChange}
                     onClose={() => setShowResumeForm(false)}
                   />
                 )}
@@ -144,7 +210,7 @@ function App() {
                   onClick={() => setShowJobDescriptionForm(true)}
                 />
 
-                {jobDescription ? (
+                {hasJobDescription ? (
                   <p className="input-status">
                     <span aria-hidden="true">✓</span>
                     Job description added ·{' '}
@@ -159,8 +225,10 @@ function App() {
                 {showJobDescriptionForm && (
                   <JobDescription
                     jobDescription={jobDescription}
-                    setJobDescription={setJobDescription}
-                    onClose={() => setShowJobDescriptionForm(false)}
+                    setJobDescription={handleJobDescriptionChange}
+                    onClose={() =>
+                      setShowJobDescriptionForm(false)
+                    }
                   />
                 )}
               </div>
@@ -168,21 +236,48 @@ function App() {
           </div>
 
           <div className="analyze-section">
-            <ActionButton
-              text={isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
-              onClick={handleAnalyze}
-              variant="primary"
-              disabled={!canAnalyze || isAnalyzing}
-            />
+            <div className="analysis-actions">
+              <ActionButton
+                text={
+                  isAnalyzing
+                    ? 'Analyzing...'
+                    : analysisResult
+                      ? 'Analyze Again'
+                      : 'Analyze Resume'
+                }
+                onClick={handleAnalyze}
+                variant="primary"
+                disabled={isAnalyzing}
+              />
+
+              {analysisResult && !isAnalyzing && (
+                <ActionButton
+                  text="Start New Analysis"
+                  onClick={handleReset}
+                />
+              )}
+            </div>
 
             <p className="privacy-note">
               <span aria-hidden="true">♙</span>
-              Your text remains in this browser during the current analysis.
+              Your text remains in this browser during the current
+              analysis.
             </p>
 
-            {!canAnalyze && (
+            {validationMessage && (
+              <p
+                className="validation-message"
+                role="alert"
+                aria-live="polite"
+              >
+                <span aria-hidden="true">!</span>
+                {validationMessage}
+              </p>
+            )}
+
+            {!canAnalyze && !validationMessage && (
               <p className="analyze-hint">
-                Add both documents to activate the analysis.
+                Add both documents to begin the analysis.
               </p>
             )}
           </div>
@@ -191,14 +286,19 @@ function App() {
         {isAnalyzing && (
           <section className="loading-card" aria-live="polite">
             <div className="loading-spinner" />
+
             <div>
               <strong>Analyzing your application</strong>
-              <p>Comparing required, matching, and missing skills...</p>
+              <p>
+                Comparing required, matching, and missing skills...
+              </p>
             </div>
           </section>
         )}
 
-        {analysisResult && <AnalysisResult result={analysisResult} />}
+        {analysisResult && (
+          <AnalysisResult result={analysisResult} />
+        )}
       </div>
     </main>
   )

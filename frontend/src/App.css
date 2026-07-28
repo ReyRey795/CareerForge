@@ -669,6 +669,48 @@
   padding: 0.5rem 1rem 0;
   text-align: center;
 }
+.analysis-actions {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+}
+
+.analysis-actions .action-button-secondary {
+  min-height: 54px;
+  padding-right: 1.35rem;
+  padding-left: 1.35rem;
+}
+
+.validation-message {
+  display: inline-flex;
+  max-width: 620px;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.85rem 0 0;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(244, 201, 93, 0.45);
+  border-radius: 10px;
+  color: #f8e7b0;
+  background-color: rgba(120, 83, 15, 0.15);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.validation-message span {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--gold-bright);
+  border-radius: 50%;
+  color: var(--gold-bright);
+  font-size: 0.7rem;
+  font-weight: 850;
+}
 
 .privacy-note,
 .analyze-hint {
