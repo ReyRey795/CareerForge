@@ -1,6 +1,6 @@
 # CareerForge
 
-CareerForge is a resume analysis application designed to help job seekers strengthen their applications by comparing a resume against a job description, identifying skill gaps, calculating a match score, and generating targeted improvement suggestions.
+CareerForge is a resume analysis application designed to help job seekers strengthen their applications by comparing a resume against a job description, identifying skill gaps, calculating a weighted match score, and generating targeted improvement suggestions.
 
 This project is being built as part of my software engineering portfolio while I transition into software engineering. The goal is to develop a modern full-stack application while applying software engineering best practices throughout the development process.
 
@@ -8,21 +8,23 @@ This project is being built as part of my software engineering portfolio while I
 
 ## 🚧 Current Status
 
-**Current Milestone:** Skill Alias Matching and Automated Testing ✅
+**Current Milestone:** Required and Preferred Skill Classification ✅
 
 CareerForge can currently:
 
 - Compare resume text against a job description
 - Detect recognized technical skills required by a position
+- Separate required and preferred qualifications
+- Calculate required and preferred skill scores
+- Calculate a weighted overall match score
 - Recognize multiple names for the same technology
 - Support multi-word and punctuation-based skills
-- Identify matching technical skills
-- Identify missing technical skills
-- Calculate a resume match percentage
-- Categorize results by match strength
+- Identify matching and missing skills
 - Generate dynamic improvement suggestions
 - Display results in a responsive analysis dashboard
 - Validate the analysis engine with automated unit tests
+- Validate missing user input
+- Reset the application for a new analysis
 
 This project is actively under development, with new features being added incrementally.
 
@@ -35,6 +37,20 @@ This project is actively under development, with new features being added increm
 - Paste resume text directly into the application
 - Paste a target job description
 - Analyze both documents using a predefined technical skill database
+- Detect required qualification sections
+- Detect preferred qualification sections
+- Recognize section headings such as:
+  - `Required Qualifications`
+  - `Required Skills`
+  - `Requirements`
+  - `Minimum Qualifications`
+  - `Must Have`
+  - `Preferred Qualifications`
+  - `Preferred Skills`
+  - `Nice to Have`
+  - `Bonus Skills`
+- Calculate separate required and preferred skill scores
+- Calculate a weighted overall score
 - Recognize technology aliases such as:
   - `React.js` and `ReactJS`
   - `Node.js` and `NodeJS`
@@ -49,17 +65,22 @@ This project is actively under development, with new features being added increm
   - `C#`
   - `CI/CD`
   - `Node.js`
-- Calculate a resume-to-job match score
-- Display required, matching, and missing skills
+- Display required skills matched
+- Display required skills missing
+- Display preferred skills matched
+- Display preferred skills missing
 - Generate suggestions based on the analysis results
 - Display match categories:
   - Excellent Match
   - Good Match
   - Fair Match
   - Needs Improvement
-- Character counters for both input sections
-- Loading state during analysis
-- Accessible match-score progress bar
+- Display character counters for both input sections
+- Display a loading state during analysis
+- Display accessible match-score progress bars
+- Validate missing resume or job-description input
+- Clear stale results when either document is edited
+- Start a completely new analysis with one button
 - Responsive dark-themed interface
 - Custom teal-and-gold technology-inspired design
 - Reusable React component architecture
@@ -99,16 +120,22 @@ The skill library will continue to expand as the analysis engine develops.
 
 1. The user enters resume text.
 2. The user pastes a job description.
-3. CareerForge checks the job description for recognized skills and aliases.
-4. Skills found in the job description are treated as required skills.
-5. CareerForge checks the resume for those required skills.
-6. The application:
-   - Identifies matching skills
-   - Identifies missing skills
-   - Calculates a match percentage
-   - Assigns a match category
-   - Generates personalized improvement suggestions
-7. The results are displayed in an interactive analysis dashboard.
+3. CareerForge divides the job description into general, required, and preferred sections.
+4. The analyzer checks those sections for recognized skills and aliases.
+5. Skills found under general or required sections are classified as required.
+6. Skills found under preferred sections are classified as preferred.
+7. If a skill appears in both categories, it is treated as required.
+8. CareerForge checks the resume for each identified skill.
+9. The application calculates:
+   - Required skills matched
+   - Required skills missing
+   - Preferred skills matched
+   - Preferred skills missing
+   - Required skill score
+   - Preferred skill score
+   - Weighted overall match score
+10. Recommendations are generated from the results.
+11. The results are displayed in an interactive analysis dashboard.
 
 CareerForge uses regular expressions and boundary-aware matching to prevent similar technology names from being incorrectly detected.
 
@@ -117,6 +144,89 @@ For example:
 - `Java` is not counted simply because `JavaScript` appears in the text.
 - `AWS` and `Amazon Web Services` are displayed as the same skill.
 - `React`, `React.js`, and `ReactJS` are displayed as `React`.
+
+---
+
+## Required and Preferred Skills
+
+CareerForge attempts to identify the structure of a job description by recognizing common qualification headings.
+
+Example:
+
+```text
+Required Qualifications:
+React
+TypeScript
+Git
+
+Preferred Qualifications:
+AWS
+Docker
+```
+
+The analyzer produces:
+
+```text
+Required Skills:
+React, TypeScript, Git
+
+Preferred Skills:
+AWS, Docker
+```
+
+If a skill appears under both headings, the required classification takes priority so the skill is not counted twice.
+
+Example:
+
+```text
+Required Skills:
+AWS
+
+Preferred Skills:
+AWS
+Docker
+```
+
+CareerForge classifies:
+
+```text
+Required:
+AWS
+
+Preferred:
+Docker
+```
+
+---
+
+## Weighted Match Score
+
+When both required and preferred skills are detected, CareerForge calculates the overall score using:
+
+```text
+Required skills: 80%
+Preferred skills: 20%
+```
+
+Example:
+
+```text
+Required score: 100%
+Preferred score: 50%
+```
+
+Calculation:
+
+```text
+100 × 0.80 = 80
+50 × 0.20 = 10
+
+Overall score = 90%
+```
+
+If only required skills are detected, the required score becomes the overall score.
+
+If only preferred skills are detected, the preferred score becomes the overall score.
 
 ---
 
@@ -158,12 +268,36 @@ CareerForge generates recommendations based on the analysis rather than displayi
 
 Depending on the resume and job description, the application may recommend:
 
-- Demonstrating missing skills through projects or professional experience
+- Demonstrating missing required skills through projects or professional experience
+- Highlighting applicable preferred qualifications
 - Moving important matched skills higher on the resume
 - Adding measurable accomplishments
 - Strengthening examples for partially matched positions
 - Tailoring the professional summary to a strong-match position
 - Providing a more detailed job description when no recognized skills are found
+
+---
+
+## Input Validation and Reset Flow
+
+CareerForge validates the user’s input before starting an analysis.
+
+The application displays specific messages when:
+
+- Both documents are missing
+- The resume is missing
+- The job description is missing
+
+Editing either document after an analysis clears the existing results so an outdated score is not displayed.
+
+The **Start New Analysis** button clears:
+
+- Resume text
+- Job-description text
+- Analysis results
+- Validation messages
+- Open input editors
+- Loading state
 
 ---
 
@@ -178,6 +312,9 @@ The current test suite verifies that the analyzer:
 - Matches skills regardless of capitalization
 - Returns a score of zero when no recognized skills are found
 - Generates the correct recommendation for strong matches
+- Separates required and preferred skills
+- Gives required skills priority when a skill appears in both categories
+- Calculates weighted required and preferred scores
 
 Run the tests once:
 
@@ -195,7 +332,7 @@ Current test status:
 
 ```text
 Test Files: 1 passed
-Tests: 5 passed
+Tests: 7 passed
 ```
 
 ---
@@ -277,10 +414,10 @@ CareerForge/
 
 - Expand the recognized skill library
 - Improve text normalization and skill matching
-- Separate required and preferred qualifications
+- Improve job-section classification
 - Detect experience-level requirements
+- Detect years-of-experience requirements
 - Detect education and certification requirements
-- Add input validation and reset functionality
 - Add AI-powered resume analysis
 - Add ATS optimization recommendations
 - Replace the predefined skill list with dynamic skill extraction
@@ -291,6 +428,7 @@ CareerForge/
 - Create a job application dashboard
 - Generate tailored cover letters
 - Expand automated test coverage
+- Add component and user-interface tests
 - Deploy the application publicly
 
 ---
@@ -303,9 +441,11 @@ The current analyzer:
 
 - Uses a predefined list of recognized skills
 - Relies on keyword and alias matching
-- Does not yet understand the context in which a skill is mentioned
-- Does not distinguish between required and preferred qualifications
-- Does not evaluate years of experience
+- Depends on recognizable headings to separate required and preferred sections
+- Treats skills outside a recognized section as required
+- Does not fully understand the context in which a skill is mentioned
+- Does not yet evaluate years of experience
+- Does not detect education or certification requirements
 - Does not currently process PDF or Word files
 - Does not save previous analyses
 - Does not yet use an external AI service or backend
@@ -331,10 +471,15 @@ This project has strengthened my understanding of:
 - Escaping special regular-expression characters
 - Skill alias matching
 - Multi-word text matching
+- Dividing text into logical sections
+- Weighted scoring systems
+- Preventing duplicate data
 - Separation of concerns
 - Reusable utility functions
 - Conditional rendering
 - Dynamic recommendation logic
+- Input validation
+- Resetting application state
 - Responsive design
 - CSS Grid and Flexbox
 - Accessible interface design
@@ -342,7 +487,7 @@ This project has strengthened my understanding of:
 - Regression testing
 - Production build validation
 - Git workflow
-- Debugging and testing
+- Debugging runtime errors
 
 ---
 
