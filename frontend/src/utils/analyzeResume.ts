@@ -54,6 +54,8 @@ export function analyzeResume(
   resumeText: string,
   jobDescription: string
 ) {
+  const skills: SkillDefinition[] = knownSkills
+
   const numberWords: Record<string, number> = {
     one: 1,
     two: 2,
@@ -113,7 +115,7 @@ export function analyzeResume(
   }
 
   function findSkills(text: string) {
-    return knownSkills.filter((skill) =>
+    return skills.filter((skill: SkillDefinition) =>
       containsSkill(text, skill.aliases)
     )
   }
@@ -124,8 +126,8 @@ export function analyzeResume(
     const occurrences: SkillOccurrence[] = []
     const occurrenceKeys = new Set<string>()
 
-    knownSkills.forEach((skill) => {
-      skill.aliases.forEach((alias) => {
+    skills.forEach((skill: SkillDefinition) => {
+      skill.aliases.forEach((alias: string) => {
         const pattern = createSkillPattern(
           alias,
           'gi'
@@ -528,8 +530,8 @@ export function analyzeResume(
     resumeSegments: string[],
     skillName: string
   ) {
-    const skill = knownSkills.find(
-      (knownSkill) =>
+    const skill = skills.find(
+      (knownSkill: SkillDefinition) =>
         knownSkill.name === skillName
     )
 
@@ -865,7 +867,7 @@ export function analyzeResume(
 
   const requiredSkillNames = new Set(
     requiredSkillDefinitions.map(
-      (skill) => skill.name
+      (skill: SkillDefinition) => skill.name
     )
   )
 
@@ -873,7 +875,7 @@ export function analyzeResume(
     findSkills(
       sections.preferred
     ).filter(
-      (skill) =>
+      (skill: SkillDefinition) =>
         !requiredSkillNames.has(
           skill.name
         )
@@ -881,23 +883,23 @@ export function analyzeResume(
 
   const requiredSkills =
     requiredSkillDefinitions.map(
-      (skill) => skill.name
+      (skill: SkillDefinition) => skill.name
     )
 
   const preferredSkills =
     preferredSkillDefinitions.map(
-      (skill) => skill.name
+      (skill: SkillDefinition) => skill.name
     )
 
   const matchedRequiredSkills =
     requiredSkillDefinitions
-      .filter((skill) =>
+      .filter((skill: SkillDefinition) =>
         containsSkill(
           resumeText,
           skill.aliases
         )
       )
-      .map((skill) => skill.name)
+      .map((skill: SkillDefinition) => skill.name)
 
   const missingRequiredSkills =
     requiredSkills.filter(
@@ -909,13 +911,13 @@ export function analyzeResume(
 
   const matchedPreferredSkills =
     preferredSkillDefinitions
-      .filter((skill) =>
+      .filter((skill: SkillDefinition) =>
         containsSkill(
           resumeText,
           skill.aliases
         )
       )
-      .map((skill) => skill.name)
+      .map((skill: SkillDefinition) => skill.name)
 
   const missingPreferredSkills =
     preferredSkills.filter(
