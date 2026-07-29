@@ -3,9 +3,14 @@ type SkillDefinition = {
   aliases: string[]
 }
 
-type JobSection = 'general' | 'required' | 'preferred'
+type JobSection =
+  | 'general'
+  | 'required'
+  | 'preferred'
 
-type ExperienceCategory = 'required' | 'preferred'
+type ExperienceCategory =
+  | 'required'
+  | 'preferred'
 
 type JobDescriptionSections = {
   general: string
@@ -96,7 +101,10 @@ export function analyzeResume(
     },
     {
       name: 'AWS',
-      aliases: ['AWS', 'Amazon Web Services'],
+      aliases: [
+        'AWS',
+        'Amazon Web Services',
+      ],
     },
     {
       name: 'Docker',
@@ -152,11 +160,15 @@ export function analyzeResume(
   }
 
   const yearNumberPattern =
-    'one|two|three|four|five|six|seven|eight|nine|ten|' +
-    'eleven|twelve|thirteen|fourteen|fifteen|\\d{1,2}'
+    'one|two|three|four|five|six|seven|' +
+    'eight|nine|ten|eleven|twelve|' +
+    'thirteen|fourteen|fifteen|\\d{1,2}'
 
   function escapeRegExp(value: string) {
-    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return value.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      '\\$&'
+    )
   }
 
   function createSkillPattern(
@@ -170,7 +182,8 @@ export function analyzeResume(
       .join('\\s+')
 
     return new RegExp(
-      `(^|[^A-Za-z0-9])${aliasPattern}(?=$|[^A-Za-z0-9])`,
+      `(^|[^A-Za-z0-9])${aliasPattern}` +
+        `(?=$|[^A-Za-z0-9])`,
       flags
     )
   }
@@ -200,11 +213,17 @@ export function analyzeResume(
 
     knownSkills.forEach((skill) => {
       skill.aliases.forEach((alias) => {
-        const pattern = createSkillPattern(alias, 'gi')
+        const pattern = createSkillPattern(
+          alias,
+          'gi'
+        )
+
         let match = pattern.exec(text)
 
         while (match) {
-          const index = match.index + match[1].length
+          const index =
+            match.index + match[1].length
+
           const key = `${skill.name}:${index}`
 
           if (!occurrenceKeys.has(key)) {
@@ -222,18 +241,23 @@ export function analyzeResume(
     })
 
     return occurrences.sort(
-      (first, second) => first.index - second.index
+      (first, second) =>
+        first.index - second.index
     )
   }
 
   function parseYearValue(value: string) {
-    const normalizedValue = value.toLowerCase()
+    const normalizedValue =
+      value.toLowerCase()
 
     if (normalizedValue in numberWords) {
       return numberWords[normalizedValue]
     }
 
-    return Number.parseInt(normalizedValue, 10)
+    return Number.parseInt(
+      normalizedValue,
+      10
+    )
   }
 
   function findYearMentions(
@@ -241,7 +265,8 @@ export function analyzeResume(
   ): YearMention[] {
     const pattern = new RegExp(
       `\\b(${yearNumberPattern})` +
-        `(?:\\s*(?:-|–|to)\\s*(${yearNumberPattern}))?` +
+        `(?:\\s*(?:-|–|to)\\s*` +
+        `(${yearNumberPattern}))?` +
         `\\s*\\+?\\s*(?:years?|yrs?)\\b`,
       'gi'
     )
@@ -269,7 +294,9 @@ export function analyzeResume(
       .filter(Boolean)
   }
 
-  function matchSectionHeading(line: string) {
+  function matchSectionHeading(
+    line: string
+  ) {
     const cleanedLine = line
       .trim()
       .replace(/^[-•*]\s*/, '')
@@ -280,23 +307,25 @@ export function analyzeResume(
     const preferredPattern =
       /^(preferred(?:\s+(?:skills|qualifications|experience))?|nice[-\s]?to[-\s]?haves?|bonus(?:\s+skills)?|desired qualifications|additional qualifications)\s*(?::|—|-)?\s*(.*)$/i
 
-    const requiredMatch = cleanedLine.match(requiredPattern)
+    const requiredMatch =
+      cleanedLine.match(requiredPattern)
 
     if (requiredMatch) {
       return {
         section: 'required' as JobSection,
-        content: requiredMatch[2].trim(),
+        content:
+          requiredMatch[2]?.trim() ?? '',
       }
     }
 
-    const preferredMatch = cleanedLine.match(
-      preferredPattern
-    )
+    const preferredMatch =
+      cleanedLine.match(preferredPattern)
 
     if (preferredMatch) {
       return {
         section: 'preferred' as JobSection,
-        content: preferredMatch[2].trim(),
+        content:
+          preferredMatch[2]?.trim() ?? '',
       }
     }
 
@@ -316,7 +345,9 @@ export function analyzeResume(
     text: string
   ): ClassifiedSegment[] {
     const segments: ClassifiedSegment[] = []
-    let currentSection: JobSection = 'general'
+
+    let currentSection: JobSection =
+      'general'
 
     const lines = text.split(/\r?\n/)
 
@@ -331,7 +362,8 @@ export function analyzeResume(
         matchSectionHeading(trimmedLine)
 
       if (headingMatch) {
-        currentSection = headingMatch.section
+        currentSection =
+          headingMatch.section
 
         if (headingMatch.content) {
           splitIntoSegments(
@@ -352,14 +384,14 @@ export function analyzeResume(
         return
       }
 
-      splitIntoSegments(trimmedLine).forEach(
-        (segment) => {
-          segments.push({
-            text: segment,
-            section: currentSection,
-          })
-        }
-      )
+      splitIntoSegments(
+        trimmedLine
+      ).forEach((segment) => {
+        segments.push({
+          text: segment,
+          section: currentSection,
+        })
+      })
     })
 
     return segments
@@ -368,14 +400,19 @@ export function analyzeResume(
   function splitJobDescription(
     segments: ClassifiedSegment[]
   ): JobDescriptionSections {
-    const sections: Record<JobSection, string[]> = {
+    const sections: Record<
+      JobSection,
+      string[]
+    > = {
       general: [],
       required: [],
       preferred: [],
     }
 
     segments.forEach((segment) => {
-      sections[segment.section].push(segment.text)
+      sections[segment.section].push(
+        segment.text
+      )
     })
 
     return {
@@ -399,7 +436,8 @@ export function analyzeResume(
           current.index - skillIndex
         )
 
-        return currentDistance < closestDistance
+        return currentDistance <
+          closestDistance
           ? current
           : closest
       }
@@ -431,9 +469,8 @@ export function analyzeResume(
       DetectedExperienceRequirement[] = []
 
     segments.forEach((segment) => {
-      const yearMentions = findYearMentions(
-        segment.text
-      )
+      const yearMentions =
+        findYearMentions(segment.text)
 
       if (yearMentions.length === 0) {
         return
@@ -448,27 +485,33 @@ export function analyzeResume(
         findSkillOccurrences(segment.text)
 
       if (skillOccurrences.length > 0) {
-        skillOccurrences.forEach((occurrence) => {
-          const closestYear = findClosestYear(
-            occurrence.index,
-            yearMentions
-          )
+        skillOccurrences.forEach(
+          (occurrence) => {
+            const closestYear =
+              findClosestYear(
+                occurrence.index,
+                yearMentions
+              )
 
-          detectedRequirements.push({
-            label: occurrence.skill.name,
-            skillName: occurrence.skill.name,
-            years: closestYear.years,
-            category,
-            sourceText: segment.text,
-          })
-        })
+            detectedRequirements.push({
+              label:
+                occurrence.skill.name,
+              skillName:
+                occurrence.skill.name,
+              years: closestYear.years,
+              category,
+              sourceText: segment.text,
+            })
+          }
+        )
 
         return
       }
 
-      const label = getGeneralExperienceLabel(
-        segment.text
-      )
+      const label =
+        getGeneralExperienceLabel(
+          segment.text
+        )
 
       yearMentions.forEach((mention) => {
         detectedRequirements.push({
@@ -481,56 +524,73 @@ export function analyzeResume(
       })
     })
 
-    const deduplicatedRequirements = new Map<
-      string,
-      DetectedExperienceRequirement
-    >()
+    const deduplicatedRequirements =
+      new Map<
+        string,
+        DetectedExperienceRequirement
+      >()
 
-    detectedRequirements.forEach((requirement) => {
-      const key =
-        `${requirement.category}:${requirement.label}`
+    detectedRequirements.forEach(
+      (requirement) => {
+        const key =
+          `${requirement.category}:` +
+          requirement.label
 
-      const existingRequirement =
-        deduplicatedRequirements.get(key)
+        const existingRequirement =
+          deduplicatedRequirements.get(key)
 
-      if (
-        !existingRequirement ||
-        requirement.years >
-          existingRequirement.years
-      ) {
-        deduplicatedRequirements.set(
-          key,
-          requirement
-        )
+        if (
+          !existingRequirement ||
+          requirement.years >
+            existingRequirement.years
+        ) {
+          deduplicatedRequirements.set(
+            key,
+            requirement
+          )
+        }
       }
-    })
+    )
 
     const requiredLabels = new Set(
       [...deduplicatedRequirements.values()]
         .filter(
           (requirement) =>
-            requirement.category === 'required'
+            requirement.category ===
+            'required'
         )
-        .map((requirement) => requirement.label)
+        .map(
+          (requirement) =>
+            requirement.label
+        )
     )
 
-    return [...deduplicatedRequirements.values()]
+    return [
+      ...deduplicatedRequirements.values(),
+    ]
       .filter(
         (requirement) =>
-          requirement.category === 'required' ||
-          !requiredLabels.has(requirement.label)
+          requirement.category ===
+            'required' ||
+          !requiredLabels.has(
+            requirement.label
+          )
       )
       .sort((first, second) => {
-        if (first.category === second.category) {
-          return first.label.localeCompare(second.label)
+        if (
+          first.category ===
+          second.category
+        ) {
+          return first.label.localeCompare(
+            second.label
+          )
         }
 
-        return first.category === 'required' ? -1 : 1
+        return first.category ===
+          'required'
+          ? -1
+          : 1
       })
-  }
-
-  function getResumeSegments(text: string) {
-    return splitIntoSegments(text)
   }
 
   function findResumeYearsForSkill(
@@ -554,25 +614,36 @@ export function analyzeResume(
 
       if (
         yearMentions.length === 0 ||
-        !containsSkill(segment, skill.aliases)
+        !containsSkill(
+          segment,
+          skill.aliases
+        )
       ) {
         return
       }
 
       const skillOccurrences =
-        findSkillOccurrences(segment).filter(
+        findSkillOccurrences(
+          segment
+        ).filter(
           (occurrence) =>
-            occurrence.skill.name === skillName
+            occurrence.skill.name ===
+            skillName
         )
 
-      skillOccurrences.forEach((occurrence) => {
-        const closestYear = findClosestYear(
-          occurrence.index,
-          yearMentions
-        )
+      skillOccurrences.forEach(
+        (occurrence) => {
+          const closestYear =
+            findClosestYear(
+              occurrence.index,
+              yearMentions
+            )
 
-        detectedYears.push(closestYear.years)
-      })
+          detectedYears.push(
+            closestYear.years
+          )
+        }
+      )
     })
 
     if (detectedYears.length === 0) {
@@ -602,7 +673,9 @@ export function analyzeResume(
               segment
             )
           : label === 'Engineering'
-            ? /engineering|engineer/i.test(segment)
+            ? /engineering|engineer/i.test(
+                segment
+              )
             : /experience|professional|worked|working/i.test(
                 segment
               )
@@ -612,7 +685,9 @@ export function analyzeResume(
       }
 
       yearMentions.forEach((mention) => {
-        detectedYears.push(mention.years)
+        detectedYears.push(
+          mention.years
+        )
       })
     })
 
@@ -628,43 +703,71 @@ export function analyzeResume(
       DetectedExperienceRequirement[],
     text: string
   ): ExperienceRequirement[] {
-    const resumeSegments = getResumeSegments(text)
+    const resumeSegments =
+      splitIntoSegments(text)
 
     return detectedRequirements.map(
       (requirement) => {
-        const resumeYears = requirement.skillName
-          ? findResumeYearsForSkill(
-              resumeSegments,
-              requirement.skillName
-            )
-          : findGeneralResumeYears(
-              resumeSegments,
-              requirement.label
-            )
+        const resumeYears =
+          requirement.skillName
+            ? findResumeYearsForSkill(
+                resumeSegments,
+                requirement.skillName
+              )
+            : findGeneralResumeYears(
+                resumeSegments,
+                requirement.label
+              )
 
         return {
           label: requirement.label,
           years: requirement.years,
-          category: requirement.category,
+          category:
+            requirement.category,
           resumeYears,
           meetsRequirement:
             resumeYears !== null &&
-            resumeYears >= requirement.years,
-          sourceText: requirement.sourceText,
+            resumeYears >=
+              requirement.years,
+          sourceText:
+            requirement.sourceText,
         }
       }
     )
   }
 
-  function calculateScore(
+  function calculateQualificationScore(
+    matchedSkillCount: number,
+    skillCount: number,
+    metExperienceCount: number,
+    experienceCount: number
+  ) {
+    const totalCriteria =
+      skillCount + experienceCount
+
+    if (totalCriteria === 0) {
+      return 0
+    }
+
+    const metCriteria =
+      matchedSkillCount +
+      metExperienceCount
+
+    return (
+      (metCriteria / totalCriteria) *
+      100
+    )
+  }
+
+  function calculateOverallScore(
     requiredScore: number,
     preferredScore: number,
-    requiredSkillCount: number,
-    preferredSkillCount: number
+    requiredCriteriaCount: number,
+    preferredCriteriaCount: number
   ) {
     if (
-      requiredSkillCount > 0 &&
-      preferredSkillCount > 0
+      requiredCriteriaCount > 0 &&
+      preferredCriteriaCount > 0
     ) {
       return (
         requiredScore * 0.8 +
@@ -672,11 +775,11 @@ export function analyzeResume(
       )
     }
 
-    if (requiredSkillCount > 0) {
+    if (requiredCriteriaCount > 0) {
       return requiredScore
     }
 
-    if (preferredSkillCount > 0) {
+    if (preferredCriteriaCount > 0) {
       return preferredScore
     }
 
@@ -701,7 +804,9 @@ export function analyzeResume(
       preferredSkills.length +
       experienceRequirements.length
 
-    if (recognizedRequirementCount === 0) {
+    if (
+      recognizedRequirementCount === 0
+    ) {
       suggestions.push(
         'Add a longer job description so CareerForge can identify more required skills.'
       )
@@ -709,13 +814,17 @@ export function analyzeResume(
       return suggestions
     }
 
-    if (missingRequiredSkills.length > 0) {
+    if (
+      missingRequiredSkills.length > 0
+    ) {
       suggestions.push(
         `Add relevant experience or projects that demonstrate these required skills: ${missingRequiredSkills.join(', ')}.`
       )
     }
 
-    if (missingPreferredSkills.length > 0) {
+    if (
+      missingPreferredSkills.length > 0
+    ) {
       suggestions.push(
         `If applicable, highlight experience with these preferred skills: ${missingPreferredSkills.join(', ')}.`
       )
@@ -724,18 +833,22 @@ export function analyzeResume(
     const unmetRequiredExperience =
       experienceRequirements.filter(
         (requirement) =>
-          requirement.category === 'required' &&
+          requirement.category ===
+            'required' &&
           !requirement.meetsRequirement
       )
 
     const unmetPreferredExperience =
       experienceRequirements.filter(
         (requirement) =>
-          requirement.category === 'preferred' &&
+          requirement.category ===
+            'preferred' &&
           !requirement.meetsRequirement
       )
 
-    if (unmetRequiredExperience.length > 0) {
+    if (
+      unmetRequiredExperience.length > 0
+    ) {
       const requirementText =
         unmetRequiredExperience
           .map(
@@ -749,7 +862,9 @@ export function analyzeResume(
       )
     }
 
-    if (unmetPreferredExperience.length > 0) {
+    if (
+      unmetPreferredExperience.length > 0
+    ) {
       const requirementText =
         unmetPreferredExperience
           .map(
@@ -774,13 +889,13 @@ export function analyzeResume(
       percentMatched < 80
     ) {
       suggestions.push(
-        'Strengthen your matched skills with specific examples and measurable results.'
+        'Strengthen your matched qualifications with specific examples and measurable results.'
       )
     }
 
     if (percentMatched >= 80) {
       suggestions.push(
-        'Your skills align well with this role. Tailor your summary and accomplishments to the position.'
+        'Your qualifications align well with this role. Tailor your summary and accomplishments to the position.'
       )
     }
 
@@ -803,15 +918,19 @@ export function analyzeResume(
   }
 
   const classifiedSegments =
-    classifyJobDescription(jobDescription)
+    classifyJobDescription(
+      jobDescription
+    )
 
-  const sections = splitJobDescription(
-    classifiedSegments
-  )
+  const sections =
+    splitJobDescription(
+      classifiedSegments
+    )
 
-  const requiredSkillDefinitions = findSkills(
-    `${sections.general} ${sections.required}`
-  )
+  const requiredSkillDefinitions =
+    findSkills(
+      `${sections.general} ${sections.required}`
+    )
 
   const requiredSkillNames = new Set(
     requiredSkillDefinitions.map(
@@ -819,12 +938,15 @@ export function analyzeResume(
     )
   )
 
-  const preferredSkillDefinitions = findSkills(
-    sections.preferred
-  ).filter(
-    (skill) =>
-      !requiredSkillNames.has(skill.name)
-  )
+  const preferredSkillDefinitions =
+    findSkills(
+      sections.preferred
+    ).filter(
+      (skill) =>
+        !requiredSkillNames.has(
+          skill.name
+        )
+    )
 
   const requiredSkills =
     requiredSkillDefinitions.map(
@@ -849,7 +971,9 @@ export function analyzeResume(
   const missingRequiredSkills =
     requiredSkills.filter(
       (skill) =>
-        !matchedRequiredSkills.includes(skill)
+        !matchedRequiredSkills.includes(
+          skill
+        )
     )
 
   const matchedPreferredSkills =
@@ -865,29 +989,10 @@ export function analyzeResume(
   const missingPreferredSkills =
     preferredSkills.filter(
       (skill) =>
-        !matchedPreferredSkills.includes(skill)
+        !matchedPreferredSkills.includes(
+          skill
+        )
     )
-
-  const requiredScore =
-    requiredSkills.length === 0
-      ? 0
-      : (matchedRequiredSkills.length /
-          requiredSkills.length) *
-        100
-
-  const preferredScore =
-    preferredSkills.length === 0
-      ? 0
-      : (matchedPreferredSkills.length /
-          preferredSkills.length) *
-        100
-
-  const percentMatched = calculateScore(
-    requiredScore,
-    preferredScore,
-    requiredSkills.length,
-    preferredSkills.length
-  )
 
   const detectedExperienceRequirements =
     detectExperienceRequirements(
@@ -900,16 +1005,75 @@ export function analyzeResume(
       resumeText
     )
 
-  const suggestions = generateSuggestions(
-    requiredSkills,
-    matchedRequiredSkills,
-    missingRequiredSkills,
-    preferredSkills,
-    matchedPreferredSkills,
-    missingPreferredSkills,
-    percentMatched,
-    experienceRequirements
-  )
+  const requiredExperienceRequirements =
+    experienceRequirements.filter(
+      (requirement) =>
+        requirement.category ===
+        'required'
+    )
+
+  const preferredExperienceRequirements =
+    experienceRequirements.filter(
+      (requirement) =>
+        requirement.category ===
+        'preferred'
+    )
+
+  const metRequiredExperienceCount =
+    requiredExperienceRequirements.filter(
+      (requirement) =>
+        requirement.meetsRequirement
+    ).length
+
+  const metPreferredExperienceCount =
+    preferredExperienceRequirements.filter(
+      (requirement) =>
+        requirement.meetsRequirement
+    ).length
+
+  const requiredScore =
+    calculateQualificationScore(
+      matchedRequiredSkills.length,
+      requiredSkills.length,
+      metRequiredExperienceCount,
+      requiredExperienceRequirements.length
+    )
+
+  const preferredScore =
+    calculateQualificationScore(
+      matchedPreferredSkills.length,
+      preferredSkills.length,
+      metPreferredExperienceCount,
+      preferredExperienceRequirements.length
+    )
+
+  const requiredCriteriaCount =
+    requiredSkills.length +
+    requiredExperienceRequirements.length
+
+  const preferredCriteriaCount =
+    preferredSkills.length +
+    preferredExperienceRequirements.length
+
+  const percentMatched =
+    calculateOverallScore(
+      requiredScore,
+      preferredScore,
+      requiredCriteriaCount,
+      preferredCriteriaCount
+    )
+
+  const suggestions =
+    generateSuggestions(
+      requiredSkills,
+      matchedRequiredSkills,
+      missingRequiredSkills,
+      preferredSkills,
+      matchedPreferredSkills,
+      missingPreferredSkills,
+      percentMatched,
+      experienceRequirements
+    )
 
   return {
     percentMatched: Number(
@@ -930,8 +1094,10 @@ export function analyzeResume(
     experienceRequirements,
     suggestions,
 
-    // Temporary compatibility for earlier tests.
-    matchedSkills: matchedRequiredSkills,
-    missingSkills: missingRequiredSkills,
+    // Compatibility with earlier code and tests.
+    matchedSkills:
+      matchedRequiredSkills,
+    missingSkills:
+      missingRequiredSkills,
   }
 }

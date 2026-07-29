@@ -5,7 +5,10 @@ import ActionButton from './components/ActionButton'
 import ResumeUpload from './components/ResumeUpload'
 import JobDescription from './components/JobDescription'
 import AnalysisResult from './components/AnalysisResult'
-import { analyzeResume } from './utils/analyzeResume'
+import {
+  analyzeResume,
+  type ExperienceRequirement,
+} from './utils/analyzeResume'
 
 type AnalysisResultData = {
   score: number
@@ -17,7 +20,12 @@ type AnalysisResultData = {
   missingRequiredSkills: string[]
   matchedPreferredSkills: string[]
   missingPreferredSkills: string[]
+  experienceRequirements: ExperienceRequirement[]
   suggestions: string[]
+
+  // Temporary compatibility with the older results component.
+  strengths: string[]
+  missingSkills: string[]
 }
 
 function App() {
@@ -28,7 +36,11 @@ function App() {
 
   const [resumeText, setResumeText] = useState('')
   const [jobDescription, setJobDescription] = useState('')
+
   const [validationMessage, setValidationMessage] =
+    useState<string | null>(null)
+
+  const [analysisError, setAnalysisError] =
     useState<string | null>(null)
 
   const [analysisResult, setAnalysisResult] =
@@ -41,6 +53,7 @@ function App() {
   function handleResumeTextChange(text: string) {
     setResumeText(text)
     setValidationMessage(null)
+    setAnalysisError(null)
 
     if (analysisResult) {
       setAnalysisResult(null)
@@ -50,6 +63,7 @@ function App() {
   function handleJobDescriptionChange(text: string) {
     setJobDescription(text)
     setValidationMessage(null)
+    setAnalysisError(null)
 
     if (analysisResult) {
       setAnalysisResult(null)
@@ -85,28 +99,58 @@ function App() {
     }
 
     setValidationMessage(null)
+    setAnalysisError(null)
     setIsAnalyzing(true)
     setAnalysisResult(null)
     setShowResumeForm(false)
     setShowJobDescriptionForm(false)
 
-    setTimeout(() => {
-      const result = analyzeResume(resumeText, jobDescription)
+    window.setTimeout(() => {
+      try {
+        const result = analyzeResume(
+          resumeText,
+          jobDescription
+        )
 
-      setAnalysisResult({
-        score: result.percentMatched,
-        requiredScore: result.requiredScore,
-        preferredScore: result.preferredScore,
-        requiredSkills: result.requiredSkills,
-        preferredSkills: result.preferredSkills,
-        matchedRequiredSkills: result.matchedRequiredSkills,
-        missingRequiredSkills: result.missingRequiredSkills,
-        matchedPreferredSkills: result.matchedPreferredSkills,
-        missingPreferredSkills: result.missingPreferredSkills,
-        suggestions: result.suggestions,
-      })
+        const matchedRequiredSkills =
+          result.matchedRequiredSkills ??
+          result.matchedSkills ??
+          []
 
-      setIsAnalyzing(false)
+        const missingRequiredSkills =
+          result.missingRequiredSkills ??
+          result.missingSkills ??
+          []
+
+        setAnalysisResult({
+          score: result.percentMatched ?? 0,
+          requiredScore: result.requiredScore ?? 0,
+          preferredScore: result.preferredScore ?? 0,
+          requiredSkills: result.requiredSkills ?? [],
+          preferredSkills: result.preferredSkills ?? [],
+          matchedRequiredSkills,
+          missingRequiredSkills,
+          matchedPreferredSkills:
+            result.matchedPreferredSkills ?? [],
+          missingPreferredSkills:
+            result.missingPreferredSkills ?? [],
+          experienceRequirements:
+            result.experienceRequirements ?? [],
+          suggestions: result.suggestions ?? [],
+
+          // These keep the older AnalysisResult component safe.
+          strengths: matchedRequiredSkills,
+          missingSkills: missingRequiredSkills,
+        })
+      } catch (error) {
+        console.error('CareerForge analysis failed:', error)
+
+        setAnalysisError(
+          'CareerForge could not complete this analysis. Check the browser console for more information.'
+        )
+      } finally {
+        setIsAnalyzing(false)
+      }
     }, 1500)
   }
 
@@ -115,6 +159,7 @@ function App() {
     setJobDescription('')
     setAnalysisResult(null)
     setValidationMessage(null)
+    setAnalysisError(null)
     setShowResumeForm(false)
     setShowJobDescriptionForm(false)
     setIsAnalyzing(false)
@@ -142,8 +187,8 @@ function App() {
 
           <p>
             Compare your resume with a job description, discover skill
-            gaps, and receive clear recommendations designed to strengthen
-            your application.
+            gaps, and receive clear recommendations designed to
+            strengthen your application.
           </p>
         </section>
 
@@ -157,26 +202,42 @@ function App() {
                 <span className="step-number">1</span>
 
                 <div className="card-title">
-                  <p className="section-kicker">Candidate profile</p>
+                  <p className="section-kicker">
+                    Candidate profile
+                  </p>
+
                   <h2>Your Resume</h2>
-                  <p>Paste your resume text to begin the comparison.</p>
+
+                  <p>
+                    Paste your resume text to begin the comparison.
+                  </p>
                 </div>
 
-                <span className="card-symbol" aria-hidden="true">
+                <span
+                  className="card-symbol"
+                  aria-hidden="true"
+                >
                   ▤
                 </span>
               </div>
 
               <div className="card-content">
                 <ActionButton
-                  text={resumeText ? 'Edit Resume' : 'Add Resume'}
-                  onClick={() => setShowResumeForm(true)}
+                  text={
+                    resumeText
+                      ? 'Edit Resume'
+                      : 'Add Resume'
+                  }
+                  onClick={() =>
+                    setShowResumeForm(true)
+                  }
                 />
 
                 {hasResume ? (
                   <p className="input-status">
                     <span aria-hidden="true">✓</span>
-                    Resume added · {resumeText.length.toLocaleString()}{' '}
+                    Resume added ·{' '}
+                    {resumeText.length.toLocaleString()}{' '}
                     characters
                   </p>
                 ) : (
@@ -188,8 +249,12 @@ function App() {
                 {showResumeForm && (
                   <ResumeUpload
                     resumeText={resumeText}
-                    setResumeText={handleResumeTextChange}
-                    onClose={() => setShowResumeForm(false)}
+                    setResumeText={
+                      handleResumeTextChange
+                    }
+                    onClose={() =>
+                      setShowResumeForm(false)
+                    }
                   />
                 )}
               </div>
@@ -200,12 +265,21 @@ function App() {
                 <span className="step-number">2</span>
 
                 <div className="card-title">
-                  <p className="section-kicker">Target opportunity</p>
+                  <p className="section-kicker">
+                    Target opportunity
+                  </p>
+
                   <h2>Job Description</h2>
-                  <p>Paste the job posting you want to compare.</p>
+
+                  <p>
+                    Paste the job posting you want to compare.
+                  </p>
                 </div>
 
-                <span className="card-symbol" aria-hidden="true">
+                <span
+                  className="card-symbol"
+                  aria-hidden="true"
+                >
                   ◫
                 </span>
               </div>
@@ -217,14 +291,17 @@ function App() {
                       ? 'Edit Job Description'
                       : 'Add Job Description'
                   }
-                  onClick={() => setShowJobDescriptionForm(true)}
+                  onClick={() =>
+                    setShowJobDescriptionForm(true)
+                  }
                 />
 
                 {hasJobDescription ? (
                   <p className="input-status">
                     <span aria-hidden="true">✓</span>
                     Job description added ·{' '}
-                    {jobDescription.length.toLocaleString()} characters
+                    {jobDescription.length.toLocaleString()}{' '}
+                    characters
                   </p>
                 ) : (
                   <p className="input-pending">
@@ -235,7 +312,9 @@ function App() {
                 {showJobDescriptionForm && (
                   <JobDescription
                     jobDescription={jobDescription}
-                    setJobDescription={handleJobDescriptionChange}
+                    setJobDescription={
+                      handleJobDescriptionChange
+                    }
                     onClose={() =>
                       setShowJobDescriptionForm(false)
                     }
@@ -270,8 +349,8 @@ function App() {
 
             <p className="privacy-note">
               <span aria-hidden="true">♙</span>
-              Your text remains in this browser during the current
-              analysis.
+              Your text remains in this browser during the
+              current analysis.
             </p>
 
             {validationMessage && (
@@ -285,23 +364,42 @@ function App() {
               </p>
             )}
 
-            {!canAnalyze && !validationMessage && (
-              <p className="analyze-hint">
-                Add both documents to begin the analysis.
+            {analysisError && (
+              <p
+                className="analysis-error"
+                role="alert"
+                aria-live="assertive"
+              >
+                <span aria-hidden="true">!</span>
+                {analysisError}
               </p>
             )}
+
+            {!canAnalyze &&
+              !validationMessage &&
+              !analysisError && (
+                <p className="analyze-hint">
+                  Add both documents to begin the analysis.
+                </p>
+              )}
           </div>
         </section>
 
         {isAnalyzing && (
-          <section className="loading-card" aria-live="polite">
+          <section
+            className="loading-card"
+            aria-live="polite"
+          >
             <div className="loading-spinner" />
 
             <div>
-              <strong>Analyzing your application</strong>
+              <strong>
+                Analyzing your application
+              </strong>
+
               <p>
-                Comparing required, preferred, matching, and missing
-                skills...
+                Comparing skills, experience requirements,
+                and missing qualifications...
               </p>
             </div>
           </section>
