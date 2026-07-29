@@ -3,181 +3,219 @@ import { analyzeResume } from './analyzeResume'
 
 describe('analyzeResume', () => {
   it('recognizes aliases and multi-word skills', () => {
+    const resume = `
+      Frontend developer experienced with ReactJS,
+      Amazon Web Services, Postgres, RESTful APIs,
+      and CI-CD pipelines.
+    `
+
     const jobDescription = `
-      We are seeking a developer with experience in NodeJS,
-      Amazon Web Services, C#, REST APIs, Docker, and CI/CD.
+      Required Qualifications:
+      React.js
+      AWS
+      PostgreSQL
+      REST APIs
+      CI/CD
     `
 
-    const resumeText = `
-      Built Node.js RESTful APIs using C Sharp and deployed
-      containerized applications to AWS.
-    `
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
 
-    const result = analyzeResume(resumeText, jobDescription)
-
-    expect(result.requiredSkills).toEqual([
-      'Node.js',
-      'C#',
+    expect(result.matchedRequiredSkills).toEqual([
+      'React',
       'AWS',
-      'Docker',
+      'PostgreSQL',
       'REST APIs',
       'CI/CD',
     ])
 
-    expect(result.matchedSkills).toEqual([
-      'Node.js',
-      'C#',
-      'AWS',
-      'REST APIs',
-    ])
-
-    expect(result.missingSkills).toEqual([
-      'Docker',
-      'CI/CD',
-    ])
-
-    expect(result.percentMatched).toBe(66.7)
+    expect(result.missingRequiredSkills).toEqual([])
+    expect(result.percentMatched).toBe(100)
   })
 
   it('does not match Java inside JavaScript', () => {
+    const resume = `
+      JavaScript developer with frontend
+      application experience.
+    `
+
     const jobDescription = `
-      Applicants should have experience with Java and JavaScript.
+      Required Qualifications:
+      Java
+      JavaScript
     `
 
-    const resumeText = `
-      Developed frontend applications using JavaScript.
-    `
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
 
-    const result = analyzeResume(resumeText, jobDescription)
+    expect(result.matchedRequiredSkills).toEqual([
+      'JavaScript',
+    ])
 
-    expect(result.matchedSkills).toEqual(['JavaScript'])
-    expect(result.missingSkills).toEqual(['Java'])
+    expect(result.missingRequiredSkills).toEqual([
+      'Java',
+    ])
+
     expect(result.percentMatched).toBe(50)
   })
 
-  it('matches skills without regard to capitalization', () => {
+  it('matches skills regardless of capitalization', () => {
+    const resume = `
+      Experienced with react, typescript,
+      docker, and aws.
+    `
+
     const jobDescription = `
-      Experience with REACT, TYPESCRIPT, and AWS is required.
+      Required Qualifications:
+      REACT
+      TYPESCRIPT
+      DOCKER
+      AWS
     `
 
-    const resumeText = `
-      Built applications using react, typescript, and aws.
-    `
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
 
-    const result = analyzeResume(resumeText, jobDescription)
-
-    expect(result.matchedSkills).toEqual([
+    expect(result.matchedRequiredSkills).toEqual([
       'React',
       'TypeScript',
       'AWS',
+      'Docker',
     ])
 
-    expect(result.missingSkills).toEqual([])
+    expect(result.missingRequiredSkills).toEqual([])
     expect(result.percentMatched).toBe(100)
   })
 
-  it('returns zero when the job description has no recognized skills', () => {
+  it('returns a zero score when no recognized skills are found', () => {
+    const resume = `
+      Experienced professional with leadership
+      and project coordination experience.
+    `
+
     const jobDescription = `
-      We need a dependable team member with strong communication skills.
+      Seeking a candidate with strong communication,
+      organization, and customer service abilities.
     `
 
-    const resumeText = `
-      Experienced professional with excellent communication skills.
-    `
-
-    const result = analyzeResume(resumeText, jobDescription)
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
 
     expect(result.requiredSkills).toEqual([])
-    expect(result.matchedSkills).toEqual([])
-    expect(result.missingSkills).toEqual([])
+    expect(result.preferredSkills).toEqual([])
+    expect(result.experienceRequirements).toEqual([])
+    expect(result.requiredScore).toBe(0)
+    expect(result.preferredScore).toBe(0)
     expect(result.percentMatched).toBe(0)
-
-    expect(result.suggestions).toContain(
-      'Add a longer job description so CareerForge can identify more required skills.'
-    )
   })
 
-  it('generates a strong-match suggestion for scores of 80 percent or higher', () => {
-    const jobDescription = `
-      The position requires React, TypeScript, Git, and Agile.
+  it('generates a strong-match suggestion for a high score', () => {
+    const resume = `
+      Software developer experienced with
+      React and TypeScript.
     `
 
-    const resumeText = `
-      Developed React and TypeScript applications using Git
-      within an Agile team.
-    `
-
-    const result = analyzeResume(resumeText, jobDescription)
-
-    expect(result.percentMatched).toBe(100)
-
-    expect(result.suggestions).toContain(
-      'Your skills align well with this role. Tailor your summary and accomplishments to the position.'
-    )
-  })
-
-  it('separates required and preferred skills', () => {
     const jobDescription = `
       Required Qualifications:
       React
       TypeScript
-      Git
-
-      Preferred Qualifications:
-      AWS
-      Docker
     `
 
-    const resumeText = `
-      Built React and TypeScript applications using Git
-      and deployed projects to AWS.
-    `
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
 
-    const result = analyzeResume(resumeText, jobDescription)
+    expect(result.percentMatched).toBe(100)
 
-    expect(result.requiredSkills).toEqual([
-      'React',
-      'TypeScript',
-      'Git',
-    ])
-
-    expect(result.preferredSkills).toEqual([
-      'AWS',
-      'Docker',
-    ])
-
-    expect(result.matchedRequiredSkills).toEqual([
-      'React',
-      'TypeScript',
-      'Git',
-    ])
-
-    expect(result.missingRequiredSkills).toEqual([])
-
-    expect(result.matchedPreferredSkills).toEqual(['AWS'])
-    expect(result.missingPreferredSkills).toEqual(['Docker'])
-
-    expect(result.requiredScore).toBe(100)
-    expect(result.preferredScore).toBe(50)
-    expect(result.percentMatched).toBe(90)
+    expect(
+      result.suggestions.some((suggestion) =>
+        suggestion.includes(
+          'qualifications align well'
+        )
+      )
+    ).toBe(true)
   })
 
-  it('gives required skills priority over preferred skills', () => {
-    const jobDescription = `
-      Required Skills:
-      AWS
-      React
+  it('separates required and preferred skills', () => {
+    const resume = `
+      Developer experienced with React
+      and Docker.
+    `
 
-      Nice to Have:
+    const jobDescription = `
+      Required Qualifications:
+      React
       AWS
+
+      Preferred Qualifications:
+      Docker
+      TypeScript
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.requiredSkills).toEqual([
+      'React',
+      'AWS',
+    ])
+
+    expect(result.preferredSkills).toEqual([
+      'TypeScript',
+      'Docker',
+    ])
+
+    expect(result.matchedRequiredSkills).toEqual([
+      'React',
+    ])
+
+    expect(result.missingRequiredSkills).toEqual([
+      'AWS',
+    ])
+
+    expect(result.matchedPreferredSkills).toEqual([
+      'Docker',
+    ])
+
+    expect(result.missingPreferredSkills).toEqual([
+      'TypeScript',
+    ])
+
+    expect(result.requiredScore).toBe(50)
+    expect(result.preferredScore).toBe(50)
+    expect(result.percentMatched).toBe(50)
+  })
+
+  it('gives required skills priority over preferred duplicates', () => {
+    const resume = `
+      Developer experienced with React.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      React
+      AWS
+
+      Preferred Qualifications:
+      React
       Docker
     `
 
-    const resumeText = `
-      Built React applications using AWS.
-    `
-
-    const result = analyzeResume(resumeText, jobDescription)
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
 
     expect(result.requiredSkills).toEqual([
       'React',
@@ -190,10 +228,183 @@ describe('analyzeResume', () => {
 
     expect(result.matchedRequiredSkills).toEqual([
       'React',
+    ])
+
+    expect(
+      result.matchedPreferredSkills
+    ).not.toContain('React')
+  })
+
+  it('detects and evaluates skill experience requirements', () => {
+    const resume = `
+      Software developer with 4 years of
+      React experience and 1 year working
+      with AWS.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      3+ years of React experience
+      At least two years working with AWS
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.experienceRequirements).toEqual([
+      expect.objectContaining({
+        label: 'AWS',
+        years: 2,
+        category: 'required',
+        resumeYears: 1,
+        meetsRequirement: false,
+      }),
+      expect.objectContaining({
+        label: 'React',
+        years: 3,
+        category: 'required',
+        resumeYears: 4,
+        meetsRequirement: true,
+      }),
+    ])
+  })
+
+  it('detects written general experience and preferred experience', () => {
+    const resume = `
+      Software developer with six years of
+      software development experience.
+
+      Familiar with Docker.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Five years of software development experience
+
+      Preferred Qualifications:
+      2+ years of Docker experience
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.experienceRequirements).toEqual([
+      expect.objectContaining({
+        label: 'Software development',
+        years: 5,
+        category: 'required',
+        resumeYears: 6,
+        meetsRequirement: true,
+      }),
+      expect.objectContaining({
+        label: 'Docker',
+        years: 2,
+        category: 'preferred',
+        resumeYears: null,
+        meetsRequirement: false,
+      }),
+    ])
+  })
+
+  it('includes experience requirements in the weighted match score', () => {
+    const resume = `
+      Software developer with 4 years of
+      React experience.
+
+      I have 1 year of experience working
+      with AWS.
+
+      I have built and deployed applications
+      using Docker.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      3+ years of React experience
+      At least two years working with AWS
+
+      Preferred Qualifications:
+      2+ years of Docker experience
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.requiredScore).toBe(75)
+    expect(result.preferredScore).toBe(50)
+    expect(result.percentMatched).toBe(70)
+
+    expect(result.matchedRequiredSkills).toEqual([
+      'React',
       'AWS',
     ])
 
-    expect(result.matchedPreferredSkills).toEqual([])
-    expect(result.missingPreferredSkills).toEqual(['Docker'])
+    expect(result.matchedPreferredSkills).toEqual([
+      'Docker',
+    ])
+
+    expect(result.experienceRequirements).toEqual([
+      expect.objectContaining({
+        label: 'AWS',
+        years: 2,
+        resumeYears: 1,
+        category: 'required',
+        meetsRequirement: false,
+      }),
+      expect.objectContaining({
+        label: 'React',
+        years: 3,
+        resumeYears: 4,
+        category: 'required',
+        meetsRequirement: true,
+      }),
+      expect.objectContaining({
+        label: 'Docker',
+        years: 2,
+        resumeYears: null,
+        category: 'preferred',
+        meetsRequirement: false,
+      }),
+    ])
+  })
+
+  it('matches a skill without confirming unstated years of experience', () => {
+    const resume = `
+      Python developer who has built several
+      automation projects.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      3+ years of Python experience
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.matchedRequiredSkills).toEqual([
+      'Python',
+    ])
+
+    expect(result.requiredScore).toBe(50)
+    expect(result.percentMatched).toBe(50)
+
+    expect(result.experienceRequirements).toEqual([
+      expect.objectContaining({
+        label: 'Python',
+        years: 3,
+        resumeYears: null,
+        category: 'required',
+        meetsRequirement: false,
+      }),
+    ])
   })
 })

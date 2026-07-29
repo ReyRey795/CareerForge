@@ -294,6 +294,24 @@ export function analyzeResume(
       .filter(Boolean)
   }
 
+  function splitResumeIntoSegments(
+    text: string
+  ): string[] {
+    return text
+      .replace(/\r\n/g, '\n')
+      .split(/\n{2,}/)
+      .map((paragraph) =>
+        paragraph
+          .replace(/\n/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+      )
+      .filter(Boolean)
+      .flatMap((paragraph) =>
+        splitIntoSegments(paragraph)
+      )
+  }
+
   function matchSectionHeading(
     line: string
   ) {
@@ -704,7 +722,7 @@ export function analyzeResume(
     text: string
   ): ExperienceRequirement[] {
     const resumeSegments =
-      splitIntoSegments(text)
+      splitResumeIntoSegments(text)
 
     return detectedRequirements.map(
       (requirement) => {
@@ -1094,7 +1112,6 @@ export function analyzeResume(
     experienceRequirements,
     suggestions,
 
-    // Compatibility with earlier code and tests.
     matchedSkills:
       matchedRequiredSkills,
     missingSkills:
