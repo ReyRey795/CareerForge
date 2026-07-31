@@ -17,8 +17,40 @@ export const knownSkills: SkillDefinition[] = [
     aliases: ['JavaScript', 'ECMAScript'],
   },
   {
+    name: 'HTML',
+    aliases: ['HTML', 'HTML5'],
+  },
+  {
+    name: 'CSS',
+    aliases: [
+      'CSS',
+      'CSS3',
+      'Cascading Style Sheets',
+    ],
+  },
+  {
+    name: 'Tailwind CSS',
+    aliases: [
+      'Tailwind CSS',
+      'TailwindCSS',
+      'Tailwind',
+    ],
+  },
+  {
+    name: 'Next.js',
+    aliases: ['Next.js', 'NextJS', 'Next JS'],
+  },
+  {
     name: 'Node.js',
     aliases: ['Node.js', 'NodeJS'],
+  },
+  {
+    name: 'Express',
+    aliases: [
+      'Express',
+      'Express.js',
+      'ExpressJS',
+    ],
   },
   {
     name: 'Python',
@@ -41,12 +73,24 @@ export const knownSkills: SkillDefinition[] = [
     aliases: ['FastAPI'],
   },
   {
+    name: 'GraphQL',
+    aliases: ['GraphQL'],
+  },
+  {
     name: 'Git',
     aliases: ['Git'],
   },
   {
     name: 'GitHub',
     aliases: ['GitHub'],
+  },
+  {
+    name: 'Jest',
+    aliases: ['Jest'],
+  },
+  {
+    name: 'Vitest',
+    aliases: ['Vitest'],
   },
   {
     name: 'AWS',
@@ -56,8 +100,24 @@ export const knownSkills: SkillDefinition[] = [
     ],
   },
   {
+    name: 'Azure',
+    aliases: ['Azure', 'Microsoft Azure'],
+  },
+  {
     name: 'Docker',
     aliases: ['Docker'],
+  },
+  {
+    name: 'Kubernetes',
+    aliases: ['Kubernetes', 'K8s'],
+  },
+  {
+    name: 'Linux',
+    aliases: ['Linux'],
+  },
+  {
+    name: 'MongoDB',
+    aliases: ['MongoDB', 'Mongo DB'],
   },
   {
     name: 'PostgreSQL',

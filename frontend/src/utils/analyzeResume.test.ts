@@ -407,4 +407,99 @@ describe('analyzeResume', () => {
       }),
     ])
   })
+
+  it('recognizes expanded full-stack skill aliases', () => {
+    const resume = `
+      Frontend and backend developer experienced with
+      HTML5, CSS3, TailwindCSS, NextJS, Express.js,
+      and Mongo DB.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      HTML
+      CSS
+      Tailwind CSS
+      Next.js
+      Express
+      MongoDB
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.matchedRequiredSkills).toEqual([
+      'HTML',
+      'CSS',
+      'Tailwind CSS',
+      'Next.js',
+      'Express',
+      'MongoDB',
+    ])
+
+    expect(result.missingRequiredSkills).toEqual([])
+    expect(result.percentMatched).toBe(100)
+  })
+
+  it('recognizes cloud, DevOps, testing, and operating-system aliases', () => {
+    const resume = `
+      Worked with Microsoft Azure, K8s, GraphQL,
+      Jest, Vitest, and Linux.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Azure
+      Kubernetes
+      GraphQL
+      Jest
+      Vitest
+      Linux
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.matchedRequiredSkills).toEqual([
+      'GraphQL',
+      'Jest',
+      'Vitest',
+      'Azure',
+      'Kubernetes',
+      'Linux',
+    ])
+
+    expect(result.missingRequiredSkills).toEqual([])
+    expect(result.percentMatched).toBe(100)
+  })
+
+  it('does not match new skills inside unrelated words', () => {
+    const resume = `
+      Built expression parsers and designed
+      majestic user interfaces.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Express
+      Jest
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.matchedRequiredSkills).toEqual([])
+    expect(result.missingRequiredSkills).toEqual([
+      'Express',
+      'Jest',
+    ])
+    expect(result.percentMatched).toBe(0)
+  })
+
 })
