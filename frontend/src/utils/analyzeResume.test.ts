@@ -559,4 +559,36 @@ describe('analyzeResume', () => {
       }),
     ])
   })
+
+  it('does not treat an in-progress bachelor degree as completed', () => {
+    const resume = `
+      Education
+
+      Bachelor of Science in Software Engineering
+      In Progress
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Bachelor's degree in Computer Science,
+      Software Engineering, or a related field
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.educationRequirements).toEqual([
+      expect.objectContaining({
+        label: "Bachelor's degree",
+        level: 'bachelor',
+        category: 'required',
+        status: 'in-progress',
+        resumeEducationLabel:
+          "Bachelor's degree",
+        meetsRequirement: false,
+      }),
+    ])
+  })
 })

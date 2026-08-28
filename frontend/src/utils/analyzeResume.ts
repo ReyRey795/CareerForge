@@ -432,6 +432,9 @@ export function analyzeResume(
       EducationRequirement[],
     text: string
   ): EducationRequirement[] {
+    const resumeSegments =
+      splitResumeIntoSegments(text)
+
     return detectedRequirements.map(
       (requirement) => {
         const resumeEducation =
@@ -439,9 +442,12 @@ export function analyzeResume(
             (definition) =>
               definition.level ===
                 requirement.level &&
-              containsSkill(
-                text,
-                definition.aliases
+              resumeSegments.some(
+                (segment) =>
+                  containsSkill(
+                    segment,
+                    definition.aliases
+                  )
               )
           )
 
@@ -449,12 +455,30 @@ export function analyzeResume(
           return requirement
         }
 
+        const matchingSegment =
+          resumeSegments.find(
+            (segment) =>
+              containsSkill(
+                segment,
+                resumeEducation.aliases
+              )
+          )
+
+        const isInProgress =
+          matchingSegment !== undefined &&
+          /\bin\s+progress\b/i.test(
+            matchingSegment
+          )
+
         return {
           ...requirement,
-          status: 'completed',
+          status: isInProgress
+            ? 'in-progress'
+            : 'completed',
           resumeEducationLabel:
             resumeEducation.label,
-          meetsRequirement: true,
+          meetsRequirement:
+            !isInProgress,
         }
       }
     )
