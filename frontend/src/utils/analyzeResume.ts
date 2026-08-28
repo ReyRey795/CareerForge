@@ -3,8 +3,10 @@ import {
   type SkillDefinition,
 } from '../data/skills'
 
-import type {
-  EducationLevel,
+import {
+  knownEducationRequirements,
+  type EducationDefinition,
+  type EducationLevel,
 } from '../data/qualifications'
 
 type JobSection =
@@ -80,6 +82,10 @@ export function analyzeResume(
   jobDescription: string
 ) {
   const skills: SkillDefinition[] = knownSkills
+
+  const educationDefinitions:
+    EducationDefinition[] =
+      knownEducationRequirements
 
   const numberWords: Record<string, number> = {
     one: 1,
@@ -378,6 +384,47 @@ export function analyzeResume(
       required: sections.required.join(' '),
       preferred: sections.preferred.join(' '),
     }
+  }
+
+  function detectEducationRequirements(
+    segments: ClassifiedSegment[]
+  ): EducationRequirement[] {
+    const detectedRequirements:
+      EducationRequirement[] = []
+
+    segments.forEach((segment) => {
+      const category: ExperienceCategory =
+        segment.section === 'preferred'
+          ? 'preferred'
+          : 'required'
+
+      educationDefinitions.forEach(
+        (definition) => {
+          const isEducationRequirement =
+            containsSkill(
+              segment.text,
+              definition.aliases
+            )
+
+          if (!isEducationRequirement) {
+            return
+          }
+
+          detectedRequirements.push({
+            label: definition.label,
+            level: definition.level,
+            category,
+            status: 'not-found',
+            resumeEducationLabel: null,
+            meetsRequirement: false,
+            allowsEquivalentExperience: false,
+            sourceText: segment.text,
+          })
+        }
+      )
+    })
+
+    return detectedRequirements
   }
 
   function findClosestYear(
@@ -963,8 +1010,10 @@ export function analyzeResume(
       resumeText
     )
 
-  const educationRequirements:
-    EducationRequirement[] = []
+  const educationRequirements =
+    detectEducationRequirements(
+      classifiedSegments
+    )
 
   const certificationRequirements:
     CertificationRequirement[] = []

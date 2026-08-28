@@ -502,4 +502,29 @@ describe('analyzeResume', () => {
     expect(result.percentMatched).toBe(0)
   })
 
+  it('detects a required bachelor education requirement', () => {
+    const resume = `
+      Bachelor of Science in Information Technology
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Bachelor's degree in Computer Science,
+      Information Technology, Software Engineering,
+      or a related field
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.educationRequirements).toEqual([
+      expect.objectContaining({
+        label: "Bachelor's degree",
+        level: 'bachelor',
+        category: 'required',
+      }),
+    ])
+  })
 })
