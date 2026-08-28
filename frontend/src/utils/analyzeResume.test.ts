@@ -591,4 +591,66 @@ describe('analyzeResume', () => {
       }),
     ])
   })
+
+  it('allows a higher completed degree to satisfy a lower degree requirement', () => {
+    const resume = `
+      Education
+
+      Master of Science in Information Technology
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Bachelor's degree in Computer Science,
+      Information Technology, Software Engineering,
+      or a related field
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.educationRequirements).toEqual([
+      expect.objectContaining({
+        label: "Bachelor's degree",
+        level: 'bachelor',
+        category: 'required',
+        status: 'completed',
+        resumeEducationLabel:
+          "Master's degree",
+        meetsRequirement: true,
+      }),
+    ])
+  })
+
+  it('does not allow a lower degree to satisfy a higher degree requirement', () => {
+    const resume = `
+      Education
+
+      Bachelor of Science in Information Technology
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Master's degree in Computer Science,
+      Information Technology, or a related field
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.educationRequirements).toEqual([
+      expect.objectContaining({
+        label: "Master's degree",
+        level: 'master',
+        category: 'required',
+        status: 'not-found',
+        resumeEducationLabel: null,
+        meetsRequirement: false,
+      }),
+    ])
+  })
 })

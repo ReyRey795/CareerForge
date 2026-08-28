@@ -437,11 +437,22 @@ export function analyzeResume(
 
     return detectedRequirements.map(
       (requirement) => {
-        const resumeEducation =
+        const requiredEducation =
           educationDefinitions.find(
             (definition) =>
               definition.level ===
-                requirement.level &&
+              requirement.level
+          )
+
+        if (!requiredEducation) {
+          return requirement
+        }
+
+        const resumeEducation =
+          educationDefinitions.find(
+            (definition) =>
+              definition.rank >=
+                requiredEducation.rank &&
               resumeSegments.some(
                 (segment) =>
                   containsSkill(
