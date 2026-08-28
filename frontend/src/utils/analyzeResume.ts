@@ -68,6 +68,13 @@ export type EducationRequirement = {
   sourceText: string
 }
 
+export type CertificationRequirement = {
+  label: string
+  category: ExperienceCategory
+  foundInResume: boolean
+  sourceText: string
+}
+
 export function analyzeResume(
   resumeText: string,
   jobDescription: string
