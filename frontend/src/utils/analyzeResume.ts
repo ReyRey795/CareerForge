@@ -963,6 +963,12 @@ export function analyzeResume(
       resumeText
     )
 
+  const educationRequirements:
+    EducationRequirement[] = []
+
+  const certificationRequirements:
+    CertificationRequirement[] = []
+
   const requiredExperienceRequirements =
     experienceRequirements.filter(
       (requirement) =>
@@ -1050,6 +1056,8 @@ export function analyzeResume(
     matchedPreferredSkills,
     missingPreferredSkills,
     experienceRequirements,
+    educationRequirements,
+    certificationRequirements,
     suggestions,
 
     matchedSkills:

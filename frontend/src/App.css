@@ -1168,3 +1168,142 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Education and certification qualification results */
+
+.qualification-card {
+  grid-column: 1 / -1;
+  min-height: auto;
+}
+
+.qualification-list {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  margin: 0;
+  padding: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  list-style: none;
+}
+
+.qualification-item {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  background-color: rgba(1, 13, 20, 0.62);
+}
+
+.qualification-item-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.qualification-item-heading > div {
+  min-width: 0;
+}
+
+.qualification-item-heading h4 {
+  margin: 0.3rem 0 0;
+  color: #ffffff;
+  font-size: 0.98rem;
+  overflow-wrap: anywhere;
+}
+
+.qualification-category {
+  display: block;
+  color: var(--teal-bright);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.qualification-category.preferred {
+  color: var(--gold-bright);
+}
+
+.qualification-status {
+  flex: 0 0 auto;
+  max-width: 190px;
+  padding: 0.38rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.status-progress {
+  border: 1px solid rgba(244, 201, 93, 0.58);
+  color: var(--gold-bright);
+  background-color: rgba(214, 169, 54, 0.11);
+}
+
+.qualification-details {
+  display: flex;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.qualification-details span {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  color: #c6d0dc;
+  background-color: rgba(2, 12, 18, 0.65);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.qualification-details strong {
+  color: #ffffff;
+}
+
+.qualification-source {
+  margin: 0.9rem 0 0;
+  color: #9eacbb;
+  font-size: 0.72rem;
+  font-style: italic;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.qualification-note {
+  margin: 1rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  color: #aebac9;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 780px) {
+  .qualification-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 580px) {
+  .qualification-item-heading {
+    flex-direction: column;
+  }
+
+  .qualification-status {
+    max-width: none;
+    align-self: flex-start;
+  }
+
+  .qualification-details {
+    flex-direction: column;
+  }
+
+  .qualification-details span {
+    width: 100%;
+  }
+}
+

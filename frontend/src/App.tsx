@@ -7,6 +7,8 @@ import JobDescription from './components/JobDescription'
 import AnalysisResult from './components/AnalysisResult'
 import {
   analyzeResume,
+  type CertificationRequirement,
+  type EducationRequirement,
   type ExperienceRequirement,
 } from './utils/analyzeResume'
 
@@ -21,6 +23,8 @@ type AnalysisResultData = {
   matchedPreferredSkills: string[]
   missingPreferredSkills: string[]
   experienceRequirements: ExperienceRequirement[]
+  educationRequirements: EducationRequirement[]
+  certificationRequirements: CertificationRequirement[]
   suggestions: string[]
 
   // Temporary compatibility with the older results component.
@@ -136,6 +140,10 @@ function App() {
             result.missingPreferredSkills ?? [],
           experienceRequirements:
             result.experienceRequirements ?? [],
+          educationRequirements:
+            result.educationRequirements ?? [],
+          certificationRequirements:
+            result.certificationRequirements ?? [],
           suggestions: result.suggestions ?? [],
 
           // These keep the older AnalysisResult component safe.
@@ -398,8 +406,8 @@ function App() {
               </strong>
 
               <p>
-                Comparing skills, experience requirements,
-                and missing qualifications...
+                Comparing skills, experience, education,
+                certifications, and missing qualifications...
               </p>
             </div>
           </section>
