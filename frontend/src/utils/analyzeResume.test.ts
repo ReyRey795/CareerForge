@@ -527,4 +527,36 @@ describe('analyzeResume', () => {
       }),
     ])
   })
+
+  it('recognizes a completed bachelor degree in the resume', () => {
+    const resume = `
+      Education
+
+      Bachelor of Science in Information Technology
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Bachelor's degree in Computer Science,
+      Information Technology, Software Engineering,
+      or a related field
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.educationRequirements).toEqual([
+      expect.objectContaining({
+        label: "Bachelor's degree",
+        level: 'bachelor',
+        category: 'required',
+        status: 'completed',
+        resumeEducationLabel:
+          "Bachelor's degree",
+        meetsRequirement: true,
+      }),
+    ])
+  })
 })

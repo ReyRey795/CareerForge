@@ -427,6 +427,39 @@ export function analyzeResume(
     return detectedRequirements
   }
 
+  function evaluateEducationRequirements(
+    detectedRequirements:
+      EducationRequirement[],
+    text: string
+  ): EducationRequirement[] {
+    return detectedRequirements.map(
+      (requirement) => {
+        const resumeEducation =
+          educationDefinitions.find(
+            (definition) =>
+              definition.level ===
+                requirement.level &&
+              containsSkill(
+                text,
+                definition.aliases
+              )
+          )
+
+        if (!resumeEducation) {
+          return requirement
+        }
+
+        return {
+          ...requirement,
+          status: 'completed',
+          resumeEducationLabel:
+            resumeEducation.label,
+          meetsRequirement: true,
+        }
+      }
+    )
+  }
+
   function findClosestYear(
     skillIndex: number,
     yearMentions: YearMention[]
@@ -1010,9 +1043,15 @@ export function analyzeResume(
       resumeText
     )
 
-  const educationRequirements =
+  const detectedEducationRequirements =
     detectEducationRequirements(
       classifiedSegments
+    )
+
+  const educationRequirements =
+    evaluateEducationRequirements(
+      detectedEducationRequirements,
+      resumeText
     )
 
   const certificationRequirements:
