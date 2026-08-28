@@ -3,6 +3,10 @@ import {
   type SkillDefinition,
 } from '../data/skills'
 
+import type {
+  EducationLevel,
+} from '../data/qualifications'
+
 type JobSection =
   | 'general'
   | 'required'
@@ -47,6 +51,20 @@ export type ExperienceRequirement = {
   category: ExperienceCategory
   resumeYears: number | null
   meetsRequirement: boolean
+  sourceText: string
+}
+
+export type EducationRequirement = {
+  label: string
+  level: EducationLevel
+  category: ExperienceCategory
+  status:
+    | 'completed'
+    | 'in-progress'
+    | 'not-found'
+  resumeEducationLabel: string | null
+  meetsRequirement: boolean
+  allowsEquivalentExperience: boolean
   sourceText: string
 }
 
