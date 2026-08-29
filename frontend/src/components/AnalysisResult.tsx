@@ -1,6 +1,7 @@
 import type {
   CertificationRequirement,
   EducationRequirement,
+  ExperienceRequirement,
 } from '../utils/analyzeResume'
 
 type AnalysisResultData = {
@@ -13,6 +14,7 @@ type AnalysisResultData = {
   missingRequiredSkills: string[]
   matchedPreferredSkills: string[]
   missingPreferredSkills: string[]
+  experienceRequirements: ExperienceRequirement[]
   educationRequirements: EducationRequirement[]
   certificationRequirements: CertificationRequirement[]
   suggestions: string[]
@@ -54,6 +56,10 @@ function getScoreClass(score: number) {
   return 'needs-improvement'
 }
 
+function formatYears(years: number) {
+  return `${years} ${years === 1 ? 'year' : 'years'}`
+}
+
 function formatEducationStatus(
   requirement: EducationRequirement
 ) {
@@ -86,11 +92,8 @@ function AnalysisResult({ result }: AnalysisResultProps) {
   const scoreLabel = getScoreLabel(result.score)
   const scoreClass = getScoreClass(result.score)
 
-  const hasRequiredSkills =
-    result.requiredSkills.length > 0
-
-  const hasPreferredSkills =
-    result.preferredSkills.length > 0
+  const experienceRequirements =
+    result.experienceRequirements ?? []
 
   const educationRequirements =
     result.educationRequirements ?? []
@@ -98,11 +101,38 @@ function AnalysisResult({ result }: AnalysisResultProps) {
   const certificationRequirements =
     result.certificationRequirements ?? []
 
+  const hasRequiredSkills =
+    result.requiredSkills.length > 0
+
+  const hasPreferredSkills =
+    result.preferredSkills.length > 0
+
+  const hasRequiredExperience =
+    experienceRequirements.some(
+      (requirement) =>
+        requirement.category === 'required'
+    )
+
+  const hasPreferredExperience =
+    experienceRequirements.some(
+      (requirement) =>
+        requirement.category === 'preferred'
+    )
+
+  const hasRequiredQualifications =
+    hasRequiredSkills || hasRequiredExperience
+
+  const hasPreferredQualifications =
+    hasPreferredSkills || hasPreferredExperience
+
   return (
     <section className="analysis-result">
       <div className="results-heading">
         <div className="results-title">
-          <span className="results-icon" aria-hidden="true">
+          <span
+            className="results-icon"
+            aria-hidden="true"
+          >
             ↗
           </span>
 
@@ -144,26 +174,32 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             <div
               className={`score-bar-fill ${scoreClass}`}
               style={{
-                width: `${Math.min(result.score, 100)}%`,
+                width: `${Math.min(
+                  result.score,
+                  100
+                )}%`,
               }}
             />
           </div>
 
-          <div className="score-scale" aria-hidden="true">
+          <div
+            className="score-scale"
+            aria-hidden="true"
+          >
             <span>0%</span>
             <span>50%</span>
             <span>100%</span>
           </div>
 
           <div className="score-breakdown">
-            {hasRequiredSkills && (
+            {hasRequiredQualifications && (
               <div className="score-breakdown-row">
                 <div>
                   <span className="breakdown-label">
-                    Required skills
+                    Required qualifications
                   </span>
 
-                  {hasPreferredSkills && (
+                  {hasPreferredQualifications && (
                     <span className="breakdown-weight">
                       80% weight
                     </span>
@@ -176,14 +212,14 @@ function AnalysisResult({ result }: AnalysisResultProps) {
               </div>
             )}
 
-            {hasPreferredSkills && (
+            {hasPreferredQualifications && (
               <div className="score-breakdown-row preferred-breakdown">
                 <div>
                   <span className="breakdown-label">
-                    Preferred skills
+                    Preferred qualifications
                   </span>
 
-                  {hasRequiredSkills && (
+                  {hasRequiredQualifications && (
                     <span className="breakdown-weight">
                       20% weight
                     </span>
@@ -200,7 +236,11 @@ function AnalysisResult({ result }: AnalysisResultProps) {
           {hasRequiredSkills ? (
             <p className="score-details">
               <strong>
-                {result.matchedRequiredSkills.length}
+                {
+                  result
+                    .matchedRequiredSkills
+                    .length
+                }
               </strong>{' '}
               of{' '}
               <strong>
@@ -226,11 +266,16 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             </div>
 
             <span className="count-badge">
-              {result.matchedRequiredSkills.length}
+              {
+                result
+                  .matchedRequiredSkills
+                  .length
+              }
             </span>
           </div>
 
-          {result.matchedRequiredSkills.length > 0 ? (
+          {result.matchedRequiredSkills.length >
+          0 ? (
             <ul className="skill-list">
               {result.matchedRequiredSkills.map(
                 (skill) => (
@@ -261,11 +306,16 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             </div>
 
             <span className="count-badge gold-badge">
-              {result.missingRequiredSkills.length}
+              {
+                result
+                  .missingRequiredSkills
+                  .length
+              }
             </span>
           </div>
 
-          {result.missingRequiredSkills.length > 0 ? (
+          {result.missingRequiredSkills.length >
+          0 ? (
             <ul className="skill-list">
               {result.missingRequiredSkills.map(
                 (skill) => (
@@ -280,7 +330,8 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             </ul>
           ) : (
             <p className="empty-message">
-              No required skills appear to be missing.
+              No required skills appear to be
+              missing.
             </p>
           )}
         </article>
@@ -296,16 +347,21 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             </div>
 
             <span className="count-badge preferred-badge">
-              {result.matchedPreferredSkills.length}
+              {
+                result
+                  .matchedPreferredSkills
+                  .length
+              }
             </span>
           </div>
 
           {!hasPreferredSkills ? (
             <p className="empty-message">
-              No preferred skills were detected in the job
-              description.
+              No preferred skills were detected
+              in the job description.
             </p>
-          ) : result.matchedPreferredSkills.length > 0 ? (
+          ) : result.matchedPreferredSkills
+              .length > 0 ? (
             <ul className="skill-list">
               {result.matchedPreferredSkills.map(
                 (skill) => (
@@ -336,16 +392,21 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             </div>
 
             <span className="count-badge preferred-badge">
-              {result.missingPreferredSkills.length}
+              {
+                result
+                  .missingPreferredSkills
+                  .length
+              }
             </span>
           </div>
 
           {!hasPreferredSkills ? (
             <p className="empty-message">
-              No preferred skills were detected in the job
-              description.
+              No preferred skills were detected
+              in the job description.
             </p>
-          ) : result.missingPreferredSkills.length > 0 ? (
+          ) : result.missingPreferredSkills
+              .length > 0 ? (
             <ul className="skill-list">
               {result.missingPreferredSkills.map(
                 (skill) => (
@@ -360,8 +421,117 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             </ul>
           ) : (
             <p className="empty-message">
-              No preferred skills appear to be missing.
+              No preferred skills appear to be
+              missing.
             </p>
+          )}
+        </article>
+
+        <article className="result-card experience-card">
+          <div className="result-card-heading">
+            <div>
+              <p className="result-category-label">
+                Qualifications
+              </p>
+
+              <h3>
+                Experience Requirements
+              </h3>
+            </div>
+
+            <span className="count-badge">
+              {experienceRequirements.length}
+            </span>
+          </div>
+
+          {experienceRequirements.length ===
+          0 ? (
+            <p className="empty-message">
+              No explicit years-of-experience
+              requirements were detected.
+            </p>
+          ) : (
+            <>
+              <ul className="experience-list">
+                {experienceRequirements.map(
+                  (requirement) => (
+                    <li
+                      className={`experience-item ${
+                        requirement.meetsRequirement
+                          ? 'experience-met'
+                          : 'experience-unconfirmed'
+                      }`}
+                      key={`${requirement.category}-${requirement.label}`}
+                    >
+                      <div className="experience-item-heading">
+                        <div>
+                          <span
+                            className={`experience-category ${requirement.category}`}
+                          >
+                            {
+                              requirement.category
+                            }
+                          </span>
+
+                          <h4>
+                            {requirement.label}
+                          </h4>
+                        </div>
+
+                        <span
+                          className={`experience-status ${
+                            requirement.meetsRequirement
+                              ? 'status-met'
+                              : 'status-unconfirmed'
+                          }`}
+                        >
+                          {requirement.meetsRequirement
+                            ? 'Meets stated requirement'
+                            : 'Not confirmed'}
+                        </span>
+                      </div>
+
+                      <div className="experience-values">
+                        <span>
+                          Job asks for{' '}
+                          <strong>
+                            {formatYears(
+                              requirement.years
+                            )}
+                          </strong>
+                        </span>
+
+                        <span>
+                          Resume states{' '}
+                          <strong>
+                            {requirement.resumeYears ===
+                            null
+                              ? 'Not stated'
+                              : formatYears(
+                                  requirement.resumeYears
+                                )}
+                          </strong>
+                        </span>
+                      </div>
+
+                      <p className="experience-source">
+                        “
+                        {
+                          requirement.sourceText
+                        }
+                        ”
+                      </p>
+                    </li>
+                  )
+                )}
+              </ul>
+
+              <p className="experience-note">
+                Explicit experience requirements
+                are included in the current
+                qualification score.
+              </p>
+            </>
           )}
         </article>
 
@@ -372,7 +542,9 @@ function AnalysisResult({ result }: AnalysisResultProps) {
                 Qualifications
               </p>
 
-              <h3>Education Requirements</h3>
+              <h3>
+                Education Requirements
+              </h3>
             </div>
 
             <span className="count-badge">
@@ -380,10 +552,11 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             </span>
           </div>
 
-          {educationRequirements.length === 0 ? (
+          {educationRequirements.length ===
+          0 ? (
             <p className="empty-message">
-              No recognized education requirements were
-              detected.
+              No recognized education
+              requirements were detected.
             </p>
           ) : (
             <ul className="qualification-list">
@@ -398,7 +571,9 @@ function AnalysisResult({ result }: AnalysisResultProps) {
                         <span
                           className={`qualification-category ${requirement.category}`}
                         >
-                          {requirement.category}
+                          {
+                            requirement.category
+                          }
                         </span>
 
                         <h4>
@@ -437,7 +612,8 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
                       {requirement.allowsEquivalentExperience && (
                         <span>
-                          Equivalent experience:{' '}
+                          Equivalent
+                          experience:{' '}
                           <strong>
                             Allowed
                           </strong>
@@ -446,7 +622,11 @@ function AnalysisResult({ result }: AnalysisResultProps) {
                     </div>
 
                     <p className="qualification-source">
-                      “{requirement.sourceText}”
+                      “
+                      {
+                        requirement.sourceText
+                      }
+                      ”
                     </p>
                   </li>
                 )
@@ -455,8 +635,10 @@ function AnalysisResult({ result }: AnalysisResultProps) {
           )}
 
           <p className="qualification-note">
-            Education requirements are reported separately
-            and do not affect the current match score yet.
+            Education requirements are
+            reported separately and do not
+            affect the current match score
+            yet.
           </p>
         </article>
 
@@ -467,7 +649,9 @@ function AnalysisResult({ result }: AnalysisResultProps) {
                 Qualifications
               </p>
 
-              <h3>Certification Requirements</h3>
+              <h3>
+                Certification Requirements
+              </h3>
             </div>
 
             <span className="count-badge">
@@ -475,10 +659,11 @@ function AnalysisResult({ result }: AnalysisResultProps) {
             </span>
           </div>
 
-          {certificationRequirements.length === 0 ? (
+          {certificationRequirements.length ===
+          0 ? (
             <p className="empty-message">
-              No recognized certification requirements were
-              detected.
+              No recognized certification
+              requirements were detected.
             </p>
           ) : (
             <ul className="qualification-list">
@@ -493,7 +678,9 @@ function AnalysisResult({ result }: AnalysisResultProps) {
                         <span
                           className={`qualification-category ${requirement.category}`}
                         >
-                          {requirement.category}
+                          {
+                            requirement.category
+                          }
                         </span>
 
                         <h4>
@@ -526,7 +713,11 @@ function AnalysisResult({ result }: AnalysisResultProps) {
                     </div>
 
                     <p className="qualification-source">
-                      “{requirement.sourceText}”
+                      “
+                      {
+                        requirement.sourceText
+                      }
+                      ”
                     </p>
                   </li>
                 )
@@ -535,9 +726,10 @@ function AnalysisResult({ result }: AnalysisResultProps) {
           )}
 
           <p className="qualification-note">
-            Certification requirements are reported
-            separately and do not affect the current match
-            score yet.
+            Certification requirements are
+            reported separately and do not
+            affect the current match score
+            yet.
           </p>
         </article>
 
