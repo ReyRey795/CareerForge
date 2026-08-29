@@ -1,4 +1,5 @@
 import type {
+  CertificationRequirement,
   EducationRequirement,
 } from '../utils/analyzeResume'
 
@@ -13,6 +14,7 @@ type AnalysisResultData = {
   matchedPreferredSkills: string[]
   missingPreferredSkills: string[]
   educationRequirements: EducationRequirement[]
+  certificationRequirements: CertificationRequirement[]
   suggestions: string[]
 }
 
@@ -92,6 +94,9 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
   const educationRequirements =
     result.educationRequirements ?? []
+
+  const certificationRequirements =
+    result.certificationRequirements ?? []
 
   return (
     <section className="analysis-result">
@@ -452,6 +457,87 @@ function AnalysisResult({ result }: AnalysisResultProps) {
           <p className="qualification-note">
             Education requirements are reported separately
             and do not affect the current match score yet.
+          </p>
+        </article>
+
+        <article className="result-card qualification-card">
+          <div className="result-card-heading">
+            <div>
+              <p className="result-category-label">
+                Qualifications
+              </p>
+
+              <h3>Certification Requirements</h3>
+            </div>
+
+            <span className="count-badge">
+              {certificationRequirements.length}
+            </span>
+          </div>
+
+          {certificationRequirements.length === 0 ? (
+            <p className="empty-message">
+              No recognized certification requirements were
+              detected.
+            </p>
+          ) : (
+            <ul className="qualification-list">
+              {certificationRequirements.map(
+                (requirement) => (
+                  <li
+                    className="qualification-item"
+                    key={`${requirement.category}-${requirement.label}`}
+                  >
+                    <div className="qualification-item-heading">
+                      <div>
+                        <span
+                          className={`qualification-category ${requirement.category}`}
+                        >
+                          {requirement.category}
+                        </span>
+
+                        <h4>
+                          {requirement.label}
+                        </h4>
+                      </div>
+
+                      <span
+                        className={`qualification-status ${
+                          requirement.foundInResume
+                            ? 'status-met'
+                            : 'status-unconfirmed'
+                        }`}
+                      >
+                        {requirement.foundInResume
+                          ? 'Found in resume'
+                          : 'Not found'}
+                      </span>
+                    </div>
+
+                    <div className="qualification-details">
+                      <span>
+                        Resume match:{' '}
+                        <strong>
+                          {requirement.foundInResume
+                            ? 'Confirmed'
+                            : 'Not confirmed'}
+                        </strong>
+                      </span>
+                    </div>
+
+                    <p className="qualification-source">
+                      “{requirement.sourceText}”
+                    </p>
+                  </li>
+                )
+              )}
+            </ul>
+          )}
+
+          <p className="qualification-note">
+            Certification requirements are reported
+            separately and do not affect the current match
+            score yet.
           </p>
         </article>
 
