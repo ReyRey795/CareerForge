@@ -5,8 +5,10 @@ import {
 
 import {
   knownEducationRequirements,
+  knownCertifications,
   type EducationDefinition,
   type EducationLevel,
+  type CertificationDefinition,
 } from '../data/qualifications'
 
 type JobSection =
@@ -86,6 +88,10 @@ export function analyzeResume(
   const educationDefinitions:
     EducationDefinition[] =
       knownEducationRequirements
+
+  const certificationDefinitions:
+    CertificationDefinition[] =
+      knownCertifications
 
   const numberWords: Record<string, number> = {
     one: 1,
@@ -493,6 +499,47 @@ export function analyzeResume(
         }
       }
     )
+  }
+
+  function detectCertificationRequirements(
+    segments: ClassifiedSegment[],
+    text: string
+  ): CertificationRequirement[] {
+    const detectedRequirements:
+      CertificationRequirement[] = []
+
+    segments.forEach((segment) => {
+      const category: ExperienceCategory =
+        segment.section === 'preferred'
+          ? 'preferred'
+          : 'required'
+
+      certificationDefinitions.forEach(
+        (definition) => {
+          const isCertificationRequirement =
+            containsSkill(
+              segment.text,
+              definition.jobAliases
+            )
+
+          if (!isCertificationRequirement) {
+            return
+          }
+
+          detectedRequirements.push({
+            label: definition.label,
+            category,
+            foundInResume: containsSkill(
+              text,
+              definition.resumeAliases
+            ),
+            sourceText: segment.text,
+          })
+        }
+      )
+    })
+
+    return detectedRequirements
   }
 
   function findClosestYear(
@@ -1089,8 +1136,11 @@ export function analyzeResume(
       resumeText
     )
 
-  const certificationRequirements:
-    CertificationRequirement[] = []
+  const certificationRequirements =
+    detectCertificationRequirements(
+      classifiedSegments,
+      resumeText
+    )
 
   const requiredExperienceRequirements =
     experienceRequirements.filter(

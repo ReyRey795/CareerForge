@@ -653,4 +653,32 @@ describe('analyzeResume', () => {
       }),
     ])
   })
+
+  it('detects a required Security+ certification found in the resume', () => {
+    const resume = `
+      Certifications
+
+      CompTIA Security+
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      CompTIA Security+ certification
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(
+      result.certificationRequirements
+    ).toEqual([
+      expect.objectContaining({
+        label: 'CompTIA Security+',
+        category: 'required',
+        foundInResume: true,
+      }),
+    ])
+  })
 })
