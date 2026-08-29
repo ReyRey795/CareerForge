@@ -1,3 +1,7 @@
+import type {
+  EducationRequirement,
+} from '../utils/analyzeResume'
+
 type AnalysisResultData = {
   score: number
   requiredScore: number
@@ -8,6 +12,7 @@ type AnalysisResultData = {
   missingRequiredSkills: string[]
   matchedPreferredSkills: string[]
   missingPreferredSkills: string[]
+  educationRequirements: EducationRequirement[]
   suggestions: string[]
 }
 
@@ -47,12 +52,46 @@ function getScoreClass(score: number) {
   return 'needs-improvement'
 }
 
+function formatEducationStatus(
+  requirement: EducationRequirement
+) {
+  if (requirement.status === 'completed') {
+    return 'Completed'
+  }
+
+  if (requirement.status === 'in-progress') {
+    return 'In progress'
+  }
+
+  return 'Not found'
+}
+
+function getEducationStatusClass(
+  requirement: EducationRequirement
+) {
+  if (requirement.meetsRequirement) {
+    return 'status-met'
+  }
+
+  if (requirement.status === 'in-progress') {
+    return 'status-progress'
+  }
+
+  return 'status-unconfirmed'
+}
+
 function AnalysisResult({ result }: AnalysisResultProps) {
   const scoreLabel = getScoreLabel(result.score)
   const scoreClass = getScoreClass(result.score)
 
-  const hasRequiredSkills = result.requiredSkills.length > 0
-  const hasPreferredSkills = result.preferredSkills.length > 0
+  const hasRequiredSkills =
+    result.requiredSkills.length > 0
+
+  const hasPreferredSkills =
+    result.preferredSkills.length > 0
+
+  const educationRequirements =
+    result.educationRequirements ?? []
 
   return (
     <section className="analysis-result">
@@ -63,20 +102,31 @@ function AnalysisResult({ result }: AnalysisResultProps) {
           </span>
 
           <div>
-            <p className="section-kicker">Your comparison</p>
+            <p className="section-kicker">
+              Your comparison
+            </p>
             <h2>Analysis Results</h2>
           </div>
         </div>
 
-        <span className="results-status">Analysis complete</span>
+        <span className="results-status">
+          Analysis complete
+        </span>
       </div>
 
       <div className="results-grid">
         <article className="result-card score-card">
-          <p className="result-card-label">Overall match score</p>
+          <p className="result-card-label">
+            Overall match score
+          </p>
 
-          <p className={`score ${scoreClass}`}>{result.score}%</p>
-          <p className={`score-label ${scoreClass}`}>{scoreLabel}</p>
+          <p className={`score ${scoreClass}`}>
+            {result.score}%
+          </p>
+
+          <p className={`score-label ${scoreClass}`}>
+            {scoreLabel}
+          </p>
 
           <div
             className="score-bar"
@@ -115,7 +165,9 @@ function AnalysisResult({ result }: AnalysisResultProps) {
                   )}
                 </div>
 
-                <strong>{result.requiredScore}%</strong>
+                <strong>
+                  {result.requiredScore}%
+                </strong>
               </div>
             )}
 
@@ -133,16 +185,23 @@ function AnalysisResult({ result }: AnalysisResultProps) {
                   )}
                 </div>
 
-                <strong>{result.preferredScore}%</strong>
+                <strong>
+                  {result.preferredScore}%
+                </strong>
               </div>
             )}
           </div>
 
           {hasRequiredSkills ? (
             <p className="score-details">
-              <strong>{result.matchedRequiredSkills.length}</strong> of{' '}
-              <strong>{result.requiredSkills.length}</strong> required
-              skills matched
+              <strong>
+                {result.matchedRequiredSkills.length}
+              </strong>{' '}
+              of{' '}
+              <strong>
+                {result.requiredSkills.length}
+              </strong>{' '}
+              required skills matched
             </p>
           ) : (
             <p className="score-details">
@@ -154,7 +213,10 @@ function AnalysisResult({ result }: AnalysisResultProps) {
         <article className="result-card skill-summary-card">
           <div className="result-card-heading">
             <div>
-              <p className="result-category-label">Required</p>
+              <p className="result-category-label">
+                Required
+              </p>
+
               <h3>Matched Skills</h3>
             </div>
 
@@ -165,14 +227,16 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
           {result.matchedRequiredSkills.length > 0 ? (
             <ul className="skill-list">
-              {result.matchedRequiredSkills.map((skill) => (
-                <li key={skill}>
-                  <span className="list-icon success-icon">
-                    ✓
-                  </span>
-                  {skill}
-                </li>
-              ))}
+              {result.matchedRequiredSkills.map(
+                (skill) => (
+                  <li key={skill}>
+                    <span className="list-icon success-icon">
+                      ✓
+                    </span>
+                    {skill}
+                  </li>
+                )
+              )}
             </ul>
           ) : (
             <p className="empty-message">
@@ -184,7 +248,10 @@ function AnalysisResult({ result }: AnalysisResultProps) {
         <article className="result-card skill-summary-card">
           <div className="result-card-heading">
             <div>
-              <p className="result-category-label">Required</p>
+              <p className="result-category-label">
+                Required
+              </p>
+
               <h3>Missing Skills</h3>
             </div>
 
@@ -195,14 +262,16 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
           {result.missingRequiredSkills.length > 0 ? (
             <ul className="skill-list">
-              {result.missingRequiredSkills.map((skill) => (
-                <li key={skill}>
-                  <span className="list-icon missing-icon">
-                    •
-                  </span>
-                  {skill}
-                </li>
-              ))}
+              {result.missingRequiredSkills.map(
+                (skill) => (
+                  <li key={skill}>
+                    <span className="list-icon missing-icon">
+                      •
+                    </span>
+                    {skill}
+                  </li>
+                )
+              )}
             </ul>
           ) : (
             <p className="empty-message">
@@ -217,6 +286,7 @@ function AnalysisResult({ result }: AnalysisResultProps) {
               <p className="result-category-label preferred-label">
                 Preferred
               </p>
+
               <h3>Matched Skills</h3>
             </div>
 
@@ -227,18 +297,21 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
           {!hasPreferredSkills ? (
             <p className="empty-message">
-              No preferred skills were detected in the job description.
+              No preferred skills were detected in the job
+              description.
             </p>
           ) : result.matchedPreferredSkills.length > 0 ? (
             <ul className="skill-list">
-              {result.matchedPreferredSkills.map((skill) => (
-                <li key={skill}>
-                  <span className="list-icon preferred-icon">
-                    ✓
-                  </span>
-                  {skill}
-                </li>
-              ))}
+              {result.matchedPreferredSkills.map(
+                (skill) => (
+                  <li key={skill}>
+                    <span className="list-icon preferred-icon">
+                      ✓
+                    </span>
+                    {skill}
+                  </li>
+                )
+              )}
             </ul>
           ) : (
             <p className="empty-message">
@@ -253,6 +326,7 @@ function AnalysisResult({ result }: AnalysisResultProps) {
               <p className="result-category-label preferred-label">
                 Preferred
               </p>
+
               <h3>Missing Skills</h3>
             </div>
 
@@ -263,18 +337,21 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
           {!hasPreferredSkills ? (
             <p className="empty-message">
-              No preferred skills were detected in the job description.
+              No preferred skills were detected in the job
+              description.
             </p>
           ) : result.missingPreferredSkills.length > 0 ? (
             <ul className="skill-list">
-              {result.missingPreferredSkills.map((skill) => (
-                <li key={skill}>
-                  <span className="list-icon preferred-missing-icon">
-                    •
-                  </span>
-                  {skill}
-                </li>
-              ))}
+              {result.missingPreferredSkills.map(
+                (skill) => (
+                  <li key={skill}>
+                    <span className="list-icon preferred-missing-icon">
+                      •
+                    </span>
+                    {skill}
+                  </li>
+                )
+              )}
             </ul>
           ) : (
             <p className="empty-message">
@@ -283,10 +360,108 @@ function AnalysisResult({ result }: AnalysisResultProps) {
           )}
         </article>
 
+        <article className="result-card qualification-card">
+          <div className="result-card-heading">
+            <div>
+              <p className="result-category-label">
+                Qualifications
+              </p>
+
+              <h3>Education Requirements</h3>
+            </div>
+
+            <span className="count-badge">
+              {educationRequirements.length}
+            </span>
+          </div>
+
+          {educationRequirements.length === 0 ? (
+            <p className="empty-message">
+              No recognized education requirements were
+              detected.
+            </p>
+          ) : (
+            <ul className="qualification-list">
+              {educationRequirements.map(
+                (requirement) => (
+                  <li
+                    className="qualification-item"
+                    key={`${requirement.category}-${requirement.level}`}
+                  >
+                    <div className="qualification-item-heading">
+                      <div>
+                        <span
+                          className={`qualification-category ${requirement.category}`}
+                        >
+                          {requirement.category}
+                        </span>
+
+                        <h4>
+                          {requirement.label}
+                        </h4>
+                      </div>
+
+                      <span
+                        className={`qualification-status ${getEducationStatusClass(
+                          requirement
+                        )}`}
+                      >
+                        {formatEducationStatus(
+                          requirement
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="qualification-details">
+                      <span>
+                        Resume:{' '}
+                        <strong>
+                          {requirement.resumeEducationLabel ??
+                            'Not found'}
+                        </strong>
+                      </span>
+
+                      <span>
+                        Requirement:{' '}
+                        <strong>
+                          {requirement.meetsRequirement
+                            ? 'Met'
+                            : 'Not confirmed'}
+                        </strong>
+                      </span>
+
+                      {requirement.allowsEquivalentExperience && (
+                        <span>
+                          Equivalent experience:{' '}
+                          <strong>
+                            Allowed
+                          </strong>
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="qualification-source">
+                      “{requirement.sourceText}”
+                    </p>
+                  </li>
+                )
+              )}
+            </ul>
+          )}
+
+          <p className="qualification-note">
+            Education requirements are reported separately
+            and do not affect the current match score yet.
+          </p>
+        </article>
+
         <article className="result-card suggestions-card">
           <div className="result-card-heading">
             <div>
-              <p className="result-category-label">Next steps</p>
+              <p className="result-category-label">
+                Next steps
+              </p>
+
               <h3>Suggestions</h3>
             </div>
 
@@ -297,12 +472,16 @@ function AnalysisResult({ result }: AnalysisResultProps) {
 
           {result.suggestions.length > 0 ? (
             <ul className="suggestion-list">
-              {result.suggestions.map((suggestion) => (
-                <li key={suggestion}>
-                  <span className="suggestion-icon">✦</span>
-                  {suggestion}
-                </li>
-              ))}
+              {result.suggestions.map(
+                (suggestion) => (
+                  <li key={suggestion}>
+                    <span className="suggestion-icon">
+                      ✦
+                    </span>
+                    {suggestion}
+                  </li>
+                )
+              )}
             </ul>
           ) : (
             <p className="empty-message">
