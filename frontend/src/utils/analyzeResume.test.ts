@@ -654,7 +654,37 @@ describe('analyzeResume', () => {
     ])
   })
 
-  it('detects a required Security+ certification found in the resume', () => {
+  it('includes missing required education in the qualification score', () => {
+    const resume = `
+      React developer with frontend project experience.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      React
+      Bachelor's degree required
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(result.requiredScore).toBe(50)
+    expect(result.percentMatched).toBe(50)
+
+    expect(result.educationRequirements).toEqual([
+      expect.objectContaining({
+        label: "Bachelor's degree",
+        category: 'required',
+        status: 'not-found',
+        resumeEducationLabel: null,
+        meetsRequirement: false,
+      }),
+    ])
+  })
+
+  it('includes a found required certification in the qualification score', () => {
     const resume = `
       Certifications
 
@@ -680,34 +710,41 @@ describe('analyzeResume', () => {
         foundInResume: true,
       }),
     ])
+
+    expect(result.requiredScore).toBe(100)
+    expect(result.percentMatched).toBe(100)
   })
-})
 
-it('detects a required Security+ certification missing from the resume', () => {
-  const resume = `
-    Technical Skills
+  it('includes a missing required certification in the qualification score', () => {
+    const resume = `
+      Technical Skills
 
-    React
-    TypeScript
-  `
+      React
+      TypeScript
+    `
 
-  const jobDescription = `
-    Required Qualifications:
-    CompTIA Security+ certification
-  `
+    const jobDescription = `
+      Required Qualifications:
+      React
+      CompTIA Security+ certification
+    `
 
-  const result = analyzeResume(
-    resume,
-    jobDescription
-  )
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
 
-  expect(
-    result.certificationRequirements
-  ).toEqual([
-    expect.objectContaining({
-      label: 'CompTIA Security+',
-      category: 'required',
-      foundInResume: false,
-    }),
-  ])
+    expect(result.requiredScore).toBe(50)
+    expect(result.percentMatched).toBe(50)
+
+    expect(
+      result.certificationRequirements
+    ).toEqual([
+      expect.objectContaining({
+        label: 'CompTIA Security+',
+        category: 'required',
+        foundInResume: false,
+      }),
+    ])
+  })
 })

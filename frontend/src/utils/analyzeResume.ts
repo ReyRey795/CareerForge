@@ -4,11 +4,11 @@ import {
 } from '../data/skills'
 
 import {
-  knownEducationRequirements,
   knownCertifications,
+  knownEducationRequirements,
+  type CertificationDefinition,
   type EducationDefinition,
   type EducationLevel,
-  type CertificationDefinition,
 } from '../data/qualifications'
 
 type JobSection =
@@ -58,14 +58,29 @@ export type ExperienceRequirement = {
   sourceText: string
 }
 
+type DetectedEducationRequirement = {
+  definition: EducationDefinition
+  category: ExperienceCategory
+  allowsEquivalentExperience: boolean
+  sourceText: string
+}
+
+type DetectedCertificationRequirement = {
+  definition: CertificationDefinition
+  category: ExperienceCategory
+  sourceText: string
+}
+
+export type EducationStatus =
+  | 'completed'
+  | 'in-progress'
+  | 'not-found'
+
 export type EducationRequirement = {
   label: string
   level: EducationLevel
   category: ExperienceCategory
-  status:
-    | 'completed'
-    | 'in-progress'
-    | 'not-found'
+  status: EducationStatus
   resumeEducationLabel: string | null
   meetsRequirement: boolean
   allowsEquivalentExperience: boolean
@@ -84,14 +99,10 @@ export function analyzeResume(
   jobDescription: string
 ) {
   const skills: SkillDefinition[] = knownSkills
-
-  const educationDefinitions:
-    EducationDefinition[] =
-      knownEducationRequirements
-
-  const certificationDefinitions:
-    CertificationDefinition[] =
-      knownCertifications
+  const educationDefinitions: EducationDefinition[] =
+    knownEducationRequirements
+  const certificationDefinitions: CertificationDefinition[] =
+    knownCertifications
 
   const numberWords: Record<string, number> = {
     one: 1,
@@ -367,6 +378,272 @@ export function analyzeResume(
     return segments
   }
 
+  function resolveRequirementCategory(
+    segment: ClassifiedSegment
+  ): ExperienceCategory {
+    const requiredCue =
+      /\b(required|must|required to|minimum)\b/i
+
+    const preferredCue =
+      /\b(preferred|nice to have|desired|bonus|a plus|is a plus)\b/i
+
+    if (requiredCue.test(segment.text)) {
+      return 'required'
+    }
+
+    if (preferredCue.test(segment.text)) {
+      return 'preferred'
+    }
+
+    return segment.section === 'preferred'
+      ? 'preferred'
+      : 'required'
+  }
+
+  function deduplicateByRequirementPriority<
+    Requirement extends {
+      category: ExperienceCategory
+    }
+  >(
+    requirements: Requirement[],
+    getLabel: (requirement: Requirement) => string
+  ) {
+    const deduplicated = new Map<
+      string,
+      Requirement
+    >()
+
+    requirements.forEach((requirement) => {
+      const label = getLabel(requirement)
+      const existing = deduplicated.get(label)
+
+      if (
+        !existing ||
+        (
+          requirement.category === 'required' &&
+          existing.category === 'preferred'
+        )
+      ) {
+        deduplicated.set(label, requirement)
+      }
+    })
+
+    return [...deduplicated.values()]
+  }
+
+  function detectEducationRequirements(
+    segments: ClassifiedSegment[]
+  ): DetectedEducationRequirement[] {
+    const detected:
+      DetectedEducationRequirement[] = []
+
+    segments.forEach((segment) => {
+      educationDefinitions.forEach(
+        (definition: EducationDefinition) => {
+          if (
+            !containsSkill(
+              segment.text,
+              definition.aliases
+            )
+          ) {
+            return
+          }
+
+          detected.push({
+            definition,
+            category:
+              resolveRequirementCategory(segment),
+            allowsEquivalentExperience:
+              /\b(or equivalent|equivalent experience|equivalent professional experience)\b/i.test(
+                segment.text
+              ),
+            sourceText: segment.text,
+          })
+        }
+      )
+    })
+
+    return deduplicateByRequirementPriority(
+      detected,
+      (requirement) =>
+        requirement.definition.label
+    ).sort((first, second) => {
+      if (first.category !== second.category) {
+        return first.category === 'required'
+          ? -1
+          : 1
+      }
+
+      return (
+        second.definition.rank -
+        first.definition.rank
+      )
+    })
+  }
+
+  function getEducationMentionStatus(
+    segment: string
+  ): EducationStatus {
+    const inProgressPattern =
+      /\b(currently pursuing|pursuing|working toward|working towards|in progress|expected|candidate for|enrolled)\b/i
+
+    return inProgressPattern.test(segment)
+      ? 'in-progress'
+      : 'completed'
+  }
+
+  function evaluateEducationRequirements(
+    detectedRequirements:
+      DetectedEducationRequirement[],
+    text: string
+  ): EducationRequirement[] {
+    const resumeSegments =
+      splitResumeIntoSegments(text)
+
+    return detectedRequirements.map(
+      (requirement) => {
+        const eligibleDefinitions =
+          educationDefinitions.filter(
+            (definition: EducationDefinition) =>
+              definition.rank >=
+              requirement.definition.rank
+          )
+
+        const matches: Array<{
+          definition: EducationDefinition
+          status: EducationStatus
+        }> = []
+
+        eligibleDefinitions.forEach(
+          (definition: EducationDefinition) => {
+            resumeSegments.forEach((segment) => {
+              if (
+                containsSkill(
+                  segment,
+                  definition.aliases
+                )
+              ) {
+                matches.push({
+                  definition,
+                  status:
+                    getEducationMentionStatus(
+                      segment
+                    ),
+                })
+              }
+            })
+          }
+        )
+
+        const completedMatch = matches
+          .filter(
+            (match) =>
+              match.status === 'completed'
+          )
+          .sort(
+            (first, second) =>
+              second.definition.rank -
+              first.definition.rank
+          )[0]
+
+        const inProgressMatch = matches
+          .filter(
+            (match) =>
+              match.status === 'in-progress'
+          )
+          .sort(
+            (first, second) =>
+              second.definition.rank -
+              first.definition.rank
+          )[0]
+
+        const bestMatch =
+          completedMatch ?? inProgressMatch
+
+        const status = bestMatch
+          ? bestMatch.status
+          : 'not-found'
+
+        return {
+          label: requirement.definition.label,
+          level: requirement.definition.level,
+          category: requirement.category,
+          status,
+          resumeEducationLabel:
+            bestMatch?.definition.label ?? null,
+          meetsRequirement:
+            status === 'completed',
+          allowsEquivalentExperience:
+            requirement.allowsEquivalentExperience,
+          sourceText: requirement.sourceText,
+        }
+      }
+    )
+  }
+
+  function detectCertificationRequirements(
+    segments: ClassifiedSegment[]
+  ): DetectedCertificationRequirement[] {
+    const detected:
+      DetectedCertificationRequirement[] = []
+
+    segments.forEach((segment) => {
+      certificationDefinitions.forEach(
+        (definition: CertificationDefinition) => {
+          if (
+            !containsSkill(
+              segment.text,
+              definition.jobAliases
+            )
+          ) {
+            return
+          }
+
+          detected.push({
+            definition,
+            category:
+              resolveRequirementCategory(segment),
+            sourceText: segment.text,
+          })
+        }
+      )
+    })
+
+    return deduplicateByRequirementPriority(
+      detected,
+      (requirement) =>
+        requirement.definition.label
+    ).sort((first, second) => {
+      if (first.category !== second.category) {
+        return first.category === 'required'
+          ? -1
+          : 1
+      }
+
+      return first.definition.label.localeCompare(
+        second.definition.label
+      )
+    })
+  }
+
+  function evaluateCertificationRequirements(
+    detectedRequirements:
+      DetectedCertificationRequirement[],
+    text: string
+  ): CertificationRequirement[] {
+    return detectedRequirements.map(
+      (requirement) => ({
+        label: requirement.definition.label,
+        category: requirement.category,
+        foundInResume: containsSkill(
+          text,
+          requirement.definition.resumeAliases
+        ),
+        sourceText: requirement.sourceText,
+      })
+    )
+  }
+
   function splitJobDescription(
     segments: ClassifiedSegment[]
   ): JobDescriptionSections {
@@ -390,156 +667,6 @@ export function analyzeResume(
       required: sections.required.join(' '),
       preferred: sections.preferred.join(' '),
     }
-  }
-
-  function detectEducationRequirements(
-    segments: ClassifiedSegment[]
-  ): EducationRequirement[] {
-    const detectedRequirements:
-      EducationRequirement[] = []
-
-    segments.forEach((segment) => {
-      const category: ExperienceCategory =
-        segment.section === 'preferred'
-          ? 'preferred'
-          : 'required'
-
-      educationDefinitions.forEach(
-        (definition) => {
-          const isEducationRequirement =
-            containsSkill(
-              segment.text,
-              definition.aliases
-            )
-
-          if (!isEducationRequirement) {
-            return
-          }
-
-          detectedRequirements.push({
-            label: definition.label,
-            level: definition.level,
-            category,
-            status: 'not-found',
-            resumeEducationLabel: null,
-            meetsRequirement: false,
-            allowsEquivalentExperience: false,
-            sourceText: segment.text,
-          })
-        }
-      )
-    })
-
-    return detectedRequirements
-  }
-
-  function evaluateEducationRequirements(
-    detectedRequirements:
-      EducationRequirement[],
-    text: string
-  ): EducationRequirement[] {
-    const resumeSegments =
-      splitResumeIntoSegments(text)
-
-    return detectedRequirements.map(
-      (requirement) => {
-        const requiredEducation =
-          educationDefinitions.find(
-            (definition) =>
-              definition.level ===
-              requirement.level
-          )
-
-        if (!requiredEducation) {
-          return requirement
-        }
-
-        const resumeEducation =
-          educationDefinitions.find(
-            (definition) =>
-              definition.rank >=
-                requiredEducation.rank &&
-              resumeSegments.some(
-                (segment) =>
-                  containsSkill(
-                    segment,
-                    definition.aliases
-                  )
-              )
-          )
-
-        if (!resumeEducation) {
-          return requirement
-        }
-
-        const matchingSegment =
-          resumeSegments.find(
-            (segment) =>
-              containsSkill(
-                segment,
-                resumeEducation.aliases
-              )
-          )
-
-        const isInProgress =
-          matchingSegment !== undefined &&
-          /\bin\s+progress\b/i.test(
-            matchingSegment
-          )
-
-        return {
-          ...requirement,
-          status: isInProgress
-            ? 'in-progress'
-            : 'completed',
-          resumeEducationLabel:
-            resumeEducation.label,
-          meetsRequirement:
-            !isInProgress,
-        }
-      }
-    )
-  }
-
-  function detectCertificationRequirements(
-    segments: ClassifiedSegment[],
-    text: string
-  ): CertificationRequirement[] {
-    const detectedRequirements:
-      CertificationRequirement[] = []
-
-    segments.forEach((segment) => {
-      const category: ExperienceCategory =
-        segment.section === 'preferred'
-          ? 'preferred'
-          : 'required'
-
-      certificationDefinitions.forEach(
-        (definition) => {
-          const isCertificationRequirement =
-            containsSkill(
-              segment.text,
-              definition.jobAliases
-            )
-
-          if (!isCertificationRequirement) {
-            return
-          }
-
-          detectedRequirements.push({
-            label: definition.label,
-            category,
-            foundInResume: containsSkill(
-              text,
-              definition.resumeAliases
-            ),
-            sourceText: segment.text,
-          })
-        }
-      )
-    })
-
-    return detectedRequirements
   }
 
   function findClosestYear(
@@ -860,10 +987,17 @@ export function analyzeResume(
     matchedSkillCount: number,
     skillCount: number,
     metExperienceCount: number,
-    experienceCount: number
+    experienceCount: number,
+    metEducationCount: number,
+    educationCount: number,
+    metCertificationCount: number,
+    certificationCount: number
   ) {
     const totalCriteria =
-      skillCount + experienceCount
+      skillCount +
+      experienceCount +
+      educationCount +
+      certificationCount
 
     if (totalCriteria === 0) {
       return 0
@@ -871,7 +1005,9 @@ export function analyzeResume(
 
     const metCriteria =
       matchedSkillCount +
-      metExperienceCount
+      metExperienceCount +
+      metEducationCount +
+      metCertificationCount
 
     return (
       (metCriteria / totalCriteria) *
@@ -1136,9 +1272,14 @@ export function analyzeResume(
       resumeText
     )
 
-  const certificationRequirements =
+  const detectedCertificationRequirements =
     detectCertificationRequirements(
-      classifiedSegments,
+      classifiedSegments
+    )
+
+  const certificationRequirements =
+    evaluateCertificationRequirements(
+      detectedCertificationRequirements,
       resumeText
     )
 
@@ -1168,12 +1309,68 @@ export function analyzeResume(
         requirement.meetsRequirement
     ).length
 
+  const requiredEducationRequirements =
+    educationRequirements.filter(
+      (requirement) =>
+        requirement.category ===
+        'required'
+    )
+
+  const preferredEducationRequirements =
+    educationRequirements.filter(
+      (requirement) =>
+        requirement.category ===
+        'preferred'
+    )
+
+  const metRequiredEducationCount =
+    requiredEducationRequirements.filter(
+      (requirement) =>
+        requirement.meetsRequirement
+    ).length
+
+  const metPreferredEducationCount =
+    preferredEducationRequirements.filter(
+      (requirement) =>
+        requirement.meetsRequirement
+    ).length
+
+  const requiredCertificationRequirements =
+    certificationRequirements.filter(
+      (requirement) =>
+        requirement.category ===
+        'required'
+    )
+
+  const preferredCertificationRequirements =
+    certificationRequirements.filter(
+      (requirement) =>
+        requirement.category ===
+        'preferred'
+    )
+
+  const metRequiredCertificationCount =
+    requiredCertificationRequirements.filter(
+      (requirement) =>
+        requirement.foundInResume
+    ).length
+
+  const metPreferredCertificationCount =
+    preferredCertificationRequirements.filter(
+      (requirement) =>
+        requirement.foundInResume
+    ).length
+
   const requiredScore =
     calculateQualificationScore(
       matchedRequiredSkills.length,
       requiredSkills.length,
       metRequiredExperienceCount,
-      requiredExperienceRequirements.length
+      requiredExperienceRequirements.length,
+      metRequiredEducationCount,
+      requiredEducationRequirements.length,
+      metRequiredCertificationCount,
+      requiredCertificationRequirements.length
     )
 
   const preferredScore =
@@ -1181,16 +1378,24 @@ export function analyzeResume(
       matchedPreferredSkills.length,
       preferredSkills.length,
       metPreferredExperienceCount,
-      preferredExperienceRequirements.length
+      preferredExperienceRequirements.length,
+      metPreferredEducationCount,
+      preferredEducationRequirements.length,
+      metPreferredCertificationCount,
+      preferredCertificationRequirements.length
     )
 
   const requiredCriteriaCount =
     requiredSkills.length +
-    requiredExperienceRequirements.length
+    requiredExperienceRequirements.length +
+    requiredEducationRequirements.length +
+    requiredCertificationRequirements.length
 
   const preferredCriteriaCount =
     preferredSkills.length +
-    preferredExperienceRequirements.length
+    preferredExperienceRequirements.length +
+    preferredEducationRequirements.length +
+    preferredCertificationRequirements.length
 
   const percentMatched =
     calculateOverallScore(
