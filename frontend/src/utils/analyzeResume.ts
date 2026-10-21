@@ -1051,20 +1051,26 @@ export function analyzeResume(
     missingPreferredSkills: string[],
     percentMatched: number,
     experienceRequirements:
-      ExperienceRequirement[]
+      ExperienceRequirement[],
+    educationRequirements:
+      EducationRequirement[],
+    certificationRequirements:
+      CertificationRequirement[]
   ) {
     const suggestions: string[] = []
 
     const recognizedRequirementCount =
       requiredSkills.length +
       preferredSkills.length +
-      experienceRequirements.length
+      experienceRequirements.length +
+      educationRequirements.length +
+      certificationRequirements.length
 
     if (
       recognizedRequirementCount === 0
     ) {
       suggestions.push(
-        'Add a longer job description so CareerForge can identify more required skills.'
+        'Add a longer job description so CareerForge can identify more recognized qualifications.'
       )
 
       return suggestions
@@ -1131,6 +1137,124 @@ export function analyzeResume(
 
       suggestions.push(
         `If applicable, document your experience for these preferred qualifications: ${requirementText}.`
+      )
+    }
+
+    const unmetRequiredEducation =
+      educationRequirements.filter(
+        (requirement) =>
+          requirement.category ===
+            'required' &&
+          !requirement.meetsRequirement
+      )
+
+    const unmetPreferredEducation =
+      educationRequirements.filter(
+        (requirement) =>
+          requirement.category ===
+            'preferred' &&
+          !requirement.meetsRequirement
+      )
+
+    unmetRequiredEducation.forEach(
+      (requirement) => {
+        if (
+          requirement.status ===
+          'in-progress'
+        ) {
+          suggestions.push(
+            `Your ${requirement.label} appears to be in progress, while this role lists it as a required education qualification.`
+          )
+
+          return
+        }
+
+        if (
+          requirement.allowsEquivalentExperience
+        ) {
+          suggestions.push(
+            `This role lists ${requirement.label} or equivalent experience as a required qualification. CareerForge could not confirm the education requirement, so make any qualifying education or equivalent experience clear on your resume.`
+          )
+
+          return
+        }
+
+        suggestions.push(
+          `This role lists ${requirement.label} as a required education qualification, but CareerForge could not confirm it in your resume.`
+        )
+      }
+    )
+
+    unmetPreferredEducation.forEach(
+      (requirement) => {
+        if (
+          requirement.status ===
+          'in-progress'
+        ) {
+          suggestions.push(
+            `Your ${requirement.label} appears to be in progress and is listed as a preferred education qualification for this role.`
+          )
+
+          return
+        }
+
+        if (
+          requirement.allowsEquivalentExperience
+        ) {
+          suggestions.push(
+            `This role prefers ${requirement.label} or equivalent experience. If applicable, make that education or experience clear on your resume.`
+          )
+
+          return
+        }
+
+        suggestions.push(
+          `CareerForge could not confirm this preferred education qualification in your resume: ${requirement.label}.`
+        )
+      }
+    )
+
+    const missingRequiredCertifications =
+      certificationRequirements.filter(
+        (requirement) =>
+          requirement.category ===
+            'required' &&
+          !requirement.foundInResume
+      )
+
+    const missingPreferredCertifications =
+      certificationRequirements.filter(
+        (requirement) =>
+          requirement.category ===
+            'preferred' &&
+          !requirement.foundInResume
+      )
+
+    if (
+      missingRequiredCertifications.length >
+      0
+    ) {
+      suggestions.push(
+        `This role lists these required certifications, but CareerForge did not find them in your resume: ${missingRequiredCertifications
+          .map(
+            (requirement) =>
+              requirement.label
+          )
+          .join(', ')}.`
+      )
+    }
+
+    if (
+      missingPreferredCertifications.length >
+      0
+    ) {
+      suggestions.push(
+        `If applicable, add or highlight these preferred certifications: ${missingPreferredCertifications
+          .map(
+            (requirement) =>
+              requirement.label
+          )
+          .join(', ')}.`
       )
     }
 
@@ -1414,7 +1538,9 @@ export function analyzeResume(
       matchedPreferredSkills,
       missingPreferredSkills,
       percentMatched,
-      experienceRequirements
+      experienceRequirements,
+      educationRequirements,
+      certificationRequirements
     )
 
   return {

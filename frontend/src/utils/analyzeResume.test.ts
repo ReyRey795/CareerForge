@@ -747,4 +747,62 @@ describe('analyzeResume', () => {
       }),
     ])
   })
+
+  it('generates suggestions for missing required education and certifications', () => {
+    const resume = `
+      Experienced technical professional.
+    `
+
+    const jobDescription = `
+      Required Qualifications:
+      Bachelor's degree required
+      CompTIA Security+ certification
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(
+      result.suggestions
+    ).toContain(
+      "This role lists Bachelor's degree as a required education qualification, but CareerForge could not confirm it in your resume."
+    )
+
+    expect(
+      result.suggestions
+    ).toContain(
+      'This role lists these required certifications, but CareerForge did not find them in your resume: CompTIA Security+.'
+    )
+  })
+
+  it('generates suggestions for missing preferred education and certifications', () => {
+    const resume = `
+      Experienced technical professional.
+    `
+
+    const jobDescription = `
+      Preferred Qualifications:
+      Master's degree preferred
+      PMP certification is a plus
+    `
+
+    const result = analyzeResume(
+      resume,
+      jobDescription
+    )
+
+    expect(
+      result.suggestions
+    ).toContain(
+      "CareerForge could not confirm this preferred education qualification in your resume: Master's degree."
+    )
+
+    expect(
+      result.suggestions
+    ).toContain(
+      'If applicable, add or highlight these preferred certifications: PMP.'
+    )
+  })
 })
